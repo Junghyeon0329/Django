@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'roles.apps.RolesConfig',
     'permissions.apps.PermissionsConfig',
     'users.apps.UsersConfig',
+    "rest_framework",
 ]
 
 MIDDLEWARE = [

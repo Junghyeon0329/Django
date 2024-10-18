@@ -2,7 +2,7 @@ from django.db import models
 
 
 class User(models.Model):
-    email_id = models.CharField(max_length=31)
+    email_id = models.CharField(max_length=50)
 
     class Meta:
         db_table = "user"
