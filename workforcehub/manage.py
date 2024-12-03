@@ -19,4 +19,5 @@ def main():
 
 
 if __name__ == '__main__':
+    # https://docs.djangoproject.com/ko/5.1/intro/tutorial01/
     main()
