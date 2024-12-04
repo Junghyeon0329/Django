@@ -50,7 +50,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'workforcehub.urls'
+# ROOT_URLCONF = 'workforcehub.urls'
+ROOT_URLCONF = 'financialhub.urls'
 
 TEMPLATES = [
     {
@@ -68,7 +69,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'workforcehub.wsgi.application'
+# WSGI_APPLICATION = 'workforcehub.wsgi.application'
+WSGI_APPLICATION = 'financialhub.wsgi.application'
 
 
 # Database
@@ -84,7 +86,7 @@ WSGI_APPLICATION = 'workforcehub.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "homepage",
+        "NAME": "sys_financial",
         "USER": "root",
         "PASSWORD": "test",
         "HOST": "127.0.0.1",
