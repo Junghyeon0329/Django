@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from rest_framework import viewsets, serializers
+from rest_framework import viewsets, serializers, response
 from personal_data.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class UserViewSet(viewsets.ModelViewSet):
 				queryset = None
 			else: 
 				serializer = self.get_serializer(queryset.first())
-				return Response({"success": True, "data": serializer.data})				
+				return response.Response({"success": True, "data": serializer.data})				
 		serializer = self.get_serializer(queryset, many=True)
-		return Response({"success": True, "data": serializer.data})
+		return response.Response({"success": True, "data": serializer.data})
 	

@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'workforcehub.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "systemtotal",
+        "NAME": "sys_workforce",
         "USER": "root",
         "PASSWORD": "test",
         "HOST": "127.0.0.1",
