@@ -3,8 +3,6 @@ from rest_framework import viewsets, serializers, response, views
 from rest_framework.permissions import IsAuthenticated, BasePermission
 
 import requests
-import sys
-import os
 
 class IsAdminOrOwner(BasePermission):
     def has_permission(self, request, view):
@@ -45,8 +43,10 @@ class UserAPIView(views.APIView):
 		# 쿼리 파라미터에서 이메일 ID를 가져옵니다.
 		
 		email_id = request.query_params.get('email_id', None)
-  
+		print("(1)")
+		print(email_id)
 		user_info = self.fetch_user_info(email_id)
+  
 		if user_info:
 			return response.Response({"success": True, "data": user_info})
 		else:
