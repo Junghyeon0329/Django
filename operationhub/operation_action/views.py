@@ -9,7 +9,7 @@ import os
 class IsAdminOrOwner(BasePermission):
     def has_permission(self, request, view):
         # 인증된 사용자만 접근 가능
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated: 
             return False
 
         # 관리자는 모든 데이터에 접근 가능
