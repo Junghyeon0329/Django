@@ -2,12 +2,16 @@ from django.shortcuts import render
 from rest_framework import viewsets, serializers, response, views
 
 import requests
+import sys
+import os
 
 class UserAPIView(views.APIView):
 	# 외부 API에서 유저 정보를 가져오는 함수
 	def fetch_user_info(self, email_id):
 		try:
-			res = requests.get(f"http://127.0.0.1:8000/users/?email_id={email_id}")
+			sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))       
+			from URLaddress import workforceURL
+			res = requests.get(f"http://{workforceURL['ip']}:{workforceURL['port']}/users/?email_id={email_id}")
 			res.raise_for_status()                
 			return res.json().get("data", {})
 		except requests.exceptions.RequestException as e:

@@ -19,4 +19,7 @@ def main():
 
 
 if __name__ == '__main__':
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))       
+    from URLaddress import financialURL
+    sys.argv = ['manage.py', 'runserver', f"{financialURL['ip']}:{financialURL['port']}"]
     main()
