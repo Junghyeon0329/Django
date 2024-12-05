@@ -18,8 +18,20 @@ from django.contrib import admin
 from django.urls import path
 
 from operation_action.views import UserAPIView
+from rest_framework_simplejwt import views as jwt_views
 
+
+'''
+    관리자를 추가하는 방법 : python manage.py createsuperuser
+
+    127.0.0.1:8000/api/token/ (x-www-form-unlencoded + username : admin + password : test)
+    토큰을 받아서 
+    http://127.0.0.1:8000/users/ + header에 key : Authorization , value : Bearer token으로 api 전달
+'''
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', UserAPIView.as_view(), name='user-api'),
-    ]
+    path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh')
+]
+    

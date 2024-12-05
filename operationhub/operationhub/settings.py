@@ -38,7 +38,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    'rest_framework',
+    'rest_framework_simplejwt',    
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT 인증 추가
+    ),
+}
+
+# JWT 설정
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # 토큰 유효 기간 (15분)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # 리프레시 토큰 유효 기간 (1일)
+    'ROTATE_REFRESH_TOKENS': False,  # 리프레시 토큰 회전 여부
+    'BLACKLIST_AFTER_ROTATION': False,  # 토큰 회전 후 블랙리스트 여부
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
