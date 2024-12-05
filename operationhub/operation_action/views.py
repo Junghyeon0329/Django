@@ -12,7 +12,8 @@ class IsAdminOrOwner(BasePermission):
         if not request.user.is_authenticated: 
             return False
 
-        # 관리자는 모든 데이터에 접근 가능
+		# TODO 관리자도 자신이 원하는 정보만 검색할 수 있어야 함
+        # 관리자는 모든 데이터에 접근 가능 
         if request.user.is_staff:
             return True
 
