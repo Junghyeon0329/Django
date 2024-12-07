@@ -18,11 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 from personal_data.views import UserViewSet
-
-# http://127.0.0.1:8000/users
-# http://127.0.0.1:8000/users/?email_id=test1@naver.com
-
 from rest_framework.routers import DefaultRouter
+
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
 

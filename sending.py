@@ -36,11 +36,12 @@ def send_api_request_get(url, headers, params):
 url = "http://127.0.0.1:8000/api/token/"
 
 body = {"username": "admin","password": "test"}
+# body = {"username": "test1","password": "test"}
 response = send_api_request_post(url, None, body)
 if response:
     access_token = response['access']
 else: 
-    print("recieve access token")
+    print("fail to recieve access token")
     sys.exit()    
 
 url = "http://127.0.0.1:8000/users/"
@@ -48,9 +49,16 @@ headers = {
     "Authorization": f"Bearer {access_token}",
     "Content-Type": "application/json"
 }
-params = {"email_id": ""}
-
-# GET 요청을 보낼 때는 params로 쿼리 파라미터를 전달
+# headers = None
+params = {"email_id": "test1@naver.com"}
+# params = {"email_id": ""}
 response = send_api_request_get(url, headers, params)
+
+body = {
+    "username": "test2",
+    "email" : "test2@naver.com",
+    "password": "test",
+    }
+response = send_api_request_post(url, headers, body)
 print(response)
 
