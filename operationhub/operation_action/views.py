@@ -109,3 +109,25 @@ class UserAPIView(views.APIView):
 		
 		except Exception as e:
 			return response.Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class TeamAPIView(views.APIView):
+	
+	def get_permissions(self):
+		permissions = [IsAuthenticated()]
+
+		# GET 요청: IsAdminOrOwner 권한 추가
+		if self.request.method == 'GET':
+			permissions.append(IsAdminOrOwner())
+		
+		# POST 요청: IsAdmin 권한 추가
+		elif self.request.method == 'POST':
+			permissions.append(IsAdmin())
+		
+		return permissions
+ 
+	def get(self, request, *args, **kwargs):
+		return response.Response({"success": True, "data": []})
+
+	def post(self, request, *args, **kwargs):
+		return response.Response({"success": True, "data": []})
+		
