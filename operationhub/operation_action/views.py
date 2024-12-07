@@ -6,9 +6,21 @@ from django.contrib.auth.models import User
 import requests
 
 class BaseAdminPermission(BasePermission):
-	def is_admin(self, user):
-		# 관리자는 모든 데이터에 접근 가능
-		return user.is_authenticated and user.is_staff
+    def is_authenticated(self, user):
+        """사용자가 인증된 상태인지 확인"""
+        return user.is_authenticated
+
+    def is_admin(self, user):
+        """사용자가 관리자(Staff)인지 확인"""
+        return self.is_authenticated(user) and user.is_staff
+
+    def is_superuser(self, user):
+        """사용자가 슈퍼유저인지 확인"""
+        return self.is_authenticated(user) and user.is_superuser
+
+    def is_admin_and_superuser(self, user):
+        """사용자가 관리자(Staff)이고 슈퍼유저인지 확인"""
+        return self.is_authenticated(user) and user.is_staff and user.is_superuser
 
 class IsAdminOrOwner(BaseAdminPermission):
 	def has_permission(self, request, view):
@@ -91,9 +103,13 @@ class UserAPIView(views.APIView):
 			# 사용자 생성
 			user = User.objects.create_user(username=username, email=email, password=password)
 			
-			# 프론트에서 받은 값으로 권한 설정
-			user.is_superuser = is_superuser
-			user.is_staff = is_staff
+			if is_superuser:
+				user.is_superuser = True
+				user.is_staff = True  # superuser는 staff도 True로 설정해야 함
+			else:
+				user.is_superuser = is_superuser
+				user.is_staff = is_staff  # 프론트에서 받은 is_staff 값 그대로 사용
+			
 			user.save()
 
 			return response.Response({
@@ -117,7 +133,7 @@ class TeamAPIView(views.APIView):
 
 		# GET 요청: IsAdminOrOwner 권한 추가
 		if self.request.method == 'GET':
-			permissions.append(IsAdminOrOwner())
+			permissions.append(IsAdmin())
 		
 		# POST 요청: IsAdmin 권한 추가
 		elif self.request.method == 'POST':
