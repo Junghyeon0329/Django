@@ -4,6 +4,10 @@ import sys
 # Global variable to store access_token
 access_token = None
 
+# ========================
+# Helper functions
+# ========================
+
 def send_api_request_post(url, headers, body):
     """POST 요청을 보내는 함수"""
     try:
@@ -33,6 +37,25 @@ def send_api_request_get(url, headers, params):
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         return None
+    
+def send_api_request_delete(url, headers):
+    """DELETE 요청을 보내는 함수"""
+    try:
+        response = requests.delete(url, headers=headers)
+
+        if response.status_code == 200:
+            print("Request was successful")
+            return response.json()  # 응답을 JSON 형식으로 반환
+        else:
+            print(f"Error {response.status_code}: {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        return None    
+
+# ========================
+# Authentication functions
+# ========================
 
 def get_access_token():
     """Access token을 받아오는 함수"""
@@ -49,11 +72,28 @@ def get_access_token():
     response = send_api_request_post(url, None, body)
     if response:
         access_token = response['access']
-        # print(f"Access Token: {access_token}")
         return access_token
     else:
         print("Failed to receive access token")
-        # sys.exit()
+
+def login_user():
+    """유저 로그인 함수"""
+    url = "http://127.0.0.1:8000/login/"
+    body = {
+        "username": input("Enter username: "),
+        "password": input("Enter password: "),
+    }
+    response = send_api_request_post(url, headers=None, body=body)
+    if response:
+        global access_token
+        access_token = response['access']
+        return access_token
+    else:
+        print("Failed to receive access token")
+
+# ========================
+# User-related API functions
+# ========================
 
 def get_user_by_email():
     """Email로 유저 정보를 조회하는 함수"""
@@ -107,40 +147,41 @@ def reset_password():
         "new_password": input("Enter new password: "),
     }
     response = send_api_request_get(url, headers, params)
-    print("Created user: ", response)
+    print("Password reset: ", response)
 
-def login_user():
-    """유저 로그인 함수"""
-    url = "http://127.0.0.1:8000/login/"
-    
-    body = {
-        "username": input("Enter username: "),
-        # "email": input("Enter email: "),
-        "password": input("Enter password: "),
+def Withdrawal():
+    """유저 회원탈퇴 함수"""
+    if not access_token:
+        print("Access token is required. Please get the token first.")
+        return  # 토큰이 없으면 실행하지 않음
+
+    url = "http://127.0.0.1:8000/info/"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
     }
-    response = send_api_request_post(url, headers = None, body=body)
-    if response:
-        access_token = response['access']
-        # print(f"Access Token: {access_token}")
-        return access_token
-    else:
-        print("Failed to receive access token")
-        # sys.exit()
-        
+    response = send_api_request_delete(url, headers)
+    print("Deleted user: ", response)
+
+# ========================
+# Main function (Menu)
+# ========================
+
 def main():
     """메인 함수 - 사용자가 선택한 옵션에 따라 다른 작업을 수행"""
     global access_token
     while True:
         # 메뉴 출력
-        print()
-        print("Choose an option:")
+        print("\nChoose an option:")
         print("1. Get Access Token")
         print("2. Create user")
         print("3. Reset password")
-        print("4. Login user")
-        print("5. Search user by email")
+        print("4. Withdrawal")
+        print("5. Login user")
+        print("6. Search user by email")
+        print("7. Exit")
 
-        choice = input("Enter your choice (1/2/3/4): ")
+        choice = input("Enter your choice (1/2/3/4/5/6/7): ")
 
         if choice == '1':
             access_token = get_access_token()
@@ -148,23 +189,36 @@ def main():
         elif choice == '2':
             if not access_token:
                 print("Access token is required. Please get the token first.")
-            else: create_user()
+            else:
+                create_user()
         
         elif choice == '3':
             if not access_token:
                 print("Access token is required. Please get the token first.")
-            else: reset_password()  
-                
+            else:
+                reset_password()  
+            
         elif choice == '4':
-            access_token = login_user()  
-              
-        elif choice == '5':
             if not access_token:
                 print("Access token is required. Please get the token first.")
-            else: get_user_by_email()
+            else:
+                Withdrawal()
+                
+        elif choice == '5':
+            access_token = login_user()
+            
+        elif choice == '6':
+            if not access_token:
+                print("Access token is required. Please get the token first.")
+            else:
+                get_user_by_email()
+        
+        elif choice == '7':
+            print("Exiting.")
+            sys.exit()
+        
         else:
-            print("Invalid choice. Exiting.")
-            # sys.exit()
+            print("Invalid choice. Please try again.")
 
 if __name__ == "__main__":
     main()

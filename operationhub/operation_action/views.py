@@ -34,15 +34,25 @@ class UserAPIView(views.APIView):
 	def get_permissions(self):
 		permissions = [IsAuthenticated()]
 
-		# GET 요청: IsAdminOrOwner 권한 추가
-		if self.request.method == 'GET':
+		# GET, POST 요청에서 관리자 권한을 추가
+		if self.request.method in ['GET', 'POST']:
 			permissions.append(IsAdmin())
 		
-		# POST 요청: IsAdmin 권한 추가
-		elif self.request.method == 'POST':
-			permissions.append(IsAdmin())
-		
+		# DELETE 요청에서 자기 자신만 삭제 가능하도록 처리
+		elif self.request.method == 'DELETE':
+			pass # 모든 로그인 사용자에게 권한 부여  
+
 		return permissions
+
+	def delete(self, request, *args, **kwargs):
+		user = request.user  # 현재 로그인된 사용자 가져오기
+		try:
+			# 자신의 계정만 삭제 가능하도록 처리
+			user.delete()
+			return response.Response({"success": True, "message": "User account deleted successfully"},
+							 status=status.HTTP_204_NO_CONTENT)
+		except Exception as e:
+			return response.Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 	
 	# 비밀번호 즉시 변경 (비밀번호를 쿼리로 받음)
 	def get(self, request, *args, **kwargs):
