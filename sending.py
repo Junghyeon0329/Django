@@ -1,12 +1,14 @@
 import requests
 import sys
 
+# Global variable to store access_token
+access_token = None
+
 def send_api_request_post(url, headers, body):
+    """POST 요청을 보내는 함수"""
     try:
-        # POST 요청을 보내는 예시 (기타 GET, PUT, DELETE 요청으로도 수정 가능)
         response = requests.post(url, headers=headers, json=body)
 
-        # 요청이 성공했는지 확인
         if response.status_code == 200:
             print("Request was successful")
             return response.json()  # 응답을 JSON 형식으로 반환
@@ -18,11 +20,10 @@ def send_api_request_post(url, headers, body):
         return None
     
 def send_api_request_get(url, headers, params):
+    """GET 요청을 보내는 함수"""
     try:
-        # GET 요청을 보낼 때는 'params' 인자를 사용하여 쿼리 파라미터를 전달
         response = requests.get(url, headers=headers, params=params)
 
-        # 요청이 성공했는지 확인
         if response.status_code == 200:
             print("Request was successful")
             return response.json()  # 응답을 JSON 형식으로 반환
@@ -33,32 +34,91 @@ def send_api_request_get(url, headers, params):
         print(f"An error occurred: {e}")
         return None
 
-url = "http://127.0.0.1:8000/api/token/"
+def get_access_token():
+    """Access token을 받아오는 함수"""
+    global access_token  # Global access_token을 사용
+    if access_token:
+        print("You already have an access token.")
+        return access_token  # 이미 토큰이 있으면 반환
 
-body = {"username": "admin","password": "test"}
-# body = {"username": "test1","password": "test"}
-response = send_api_request_post(url, None, body)
-if response:
-    access_token = response['access']
-else: 
-    print("fail to recieve access token")
-    sys.exit()    
-
-url = "http://127.0.0.1:8000/users/"
-headers = {
-    "Authorization": f"Bearer {access_token}",
-    "Content-Type": "application/json"
-}
-# headers = None
-params = {"email_id": "test1@naver.com"}
-# params = {"email_id": ""}
-response = send_api_request_get(url, headers, params)
-
-body = {
-    "username": "test2",
-    "email" : "test2@naver.com",
-    "password": "test",
+    url = "http://127.0.0.1:8000/api/token/"
+    body = {
+        "username": input("Enter username: "),
+        "password": input("Enter password: ")
     }
-response = send_api_request_post(url, headers, body)
-print(response)
+    response = send_api_request_post(url, None, body)
+    if response:
+        access_token = response['access']
+        # print(f"Access Token: {access_token}")
+        return access_token
+    else:
+        print("Failed to receive access token")
+        sys.exit()
 
+def get_user_by_email():
+    """Email로 유저 정보를 조회하는 함수"""
+    if not access_token:
+        print("Access token is required. Please get the token first.")
+        return  # 토큰이 없으면 실행하지 않음
+
+    url = "http://127.0.0.1:8000/users/"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    params = {"email_id": input("Enter email ID to search: ")}
+    response = send_api_request_get(url, headers, params)
+    print("User info: ", response)
+
+def create_user():
+    """새 유저를 생성하는 함수"""
+    if not access_token:
+        print("Access token is required. Please get the token first.")
+        return  # 토큰이 없으면 실행하지 않음
+
+    url = "http://127.0.0.1:8000/users/"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    body = {
+        "username": input("Enter username: "),
+        "email": input("Enter email: "),
+        "password": input("Enter password: "),
+        "is_superuser" : False,
+        "is_staff" : False
+    }
+    response = send_api_request_post(url, headers, body)
+    print("Created user: ", response)
+
+def main():
+    """메인 함수 - 사용자가 선택한 옵션에 따라 다른 작업을 수행"""
+    global access_token
+    while True:
+        # 메뉴 출력
+        print()
+        print("Choose an option:")
+        print("1. Get Access Token")
+        print("2. Search user by email")
+        print("3. Create user")
+
+        choice = input("Enter your choice (1/2/3): ")
+
+        if choice == '1':
+            access_token = get_access_token()
+        elif choice == '2':
+            if not access_token:
+                print("Access token is required. Please get the token first.")
+            else:
+                get_user_by_email()
+        elif choice == '3':
+            if not access_token:
+                print("Access token is required. Please get the token first.")
+            else:
+                create_user()
+        else:
+            print("Invalid choice. Exiting.")
+            sys.exit()
+
+if __name__ == "__main__":
+    main()
