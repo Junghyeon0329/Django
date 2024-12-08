@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 
 from operation_action.views import UserAPIView
+from operation_action.workforce import WorkforceAPIView
 from operation_action.logins import LoginAPIView
 from rest_framework_simplejwt import views as jwt_views
 
@@ -25,7 +26,8 @@ from rest_framework_simplejwt import views as jwt_views
 ''' 관리자를 추가하는 방법 : python manage.py createsuperuser '''
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('users/', UserAPIView.as_view(), name='user-api'),
+    path('info/', UserAPIView.as_view(), name='info-api'),
+    path('users/', WorkforceAPIView.as_view(), name='user-api'),
     path('login/', LoginAPIView.as_view(), name='login-api'),    
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh')

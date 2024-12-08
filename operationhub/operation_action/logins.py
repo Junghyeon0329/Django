@@ -20,8 +20,8 @@ class LoginAPIView(APIView):
             access_token = str(refresh.access_token)
 
             return response.Response({
-                'access_token': access_token,
-                'refresh_token': str(refresh),
+                'access': access_token,
+                'refresh': str(refresh),
             }, status=status.HTTP_200_OK)
         else:
             return response.Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)

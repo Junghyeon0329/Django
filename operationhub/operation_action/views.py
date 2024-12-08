@@ -2,37 +2,26 @@ from django.shortcuts import render
 from rest_framework import viewsets, serializers, response, views, status
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 
 import requests
 
 class BaseAdminPermission(BasePermission):
-    def is_authenticated(self, user):
-        """사용자가 인증된 상태인지 확인"""
-        return user.is_authenticated
+	def is_authenticated(self, user):
+		"""사용자가 인증된 상태인지 확인"""
+		return user.is_authenticated
 
-    def is_admin(self, user):
-        """사용자가 관리자(Staff)인지 확인"""
-        return self.is_authenticated(user) and user.is_staff
+	def is_admin(self, user):
+		"""사용자가 관리자(Staff)인지 확인"""
+		return self.is_authenticated(user) and user.is_staff
 
-    def is_superuser(self, user):
-        """사용자가 슈퍼유저인지 확인"""
-        return self.is_authenticated(user) and user.is_superuser
+	def is_superuser(self, user):
+		"""사용자가 슈퍼유저인지 확인"""
+		return self.is_authenticated(user) and user.is_superuser
 
-    def is_admin_and_superuser(self, user):
-        """사용자가 관리자(Staff)이고 슈퍼유저인지 확인"""
-        return self.is_authenticated(user) and user.is_staff and user.is_superuser
-
-class IsAdminOrOwner(BaseAdminPermission):
-	def has_permission(self, request, view):
-		# 관리자는 모든 데이터에 접근 가능
-		if self.is_admin(request.user):
-			return True
-
-		# 일반 사용자는 자신의 데이터만 조회 가능
-		email_id = request.query_params.get('email_id')  # URL parameter에서 email_id 추출
-		if email_id and request.user.email == email_id:
-			return True
-		return False
+	def is_admin_and_superuser(self, user):
+		"""사용자가 관리자(Staff)이고 슈퍼유저인지 확인"""
+		return self.is_authenticated(user) and user.is_staff and user.is_superuser
 
 class IsAdmin(BaseAdminPermission):
 	def has_permission(self, request, view):
@@ -42,49 +31,43 @@ class IsAdmin(BaseAdminPermission):
 		return False
 
 class UserAPIView(views.APIView):
-
 	def get_permissions(self):
 		permissions = [IsAuthenticated()]
 
 		# GET 요청: IsAdminOrOwner 권한 추가
 		if self.request.method == 'GET':
-			permissions.append(IsAdminOrOwner())
+			permissions.append(IsAdmin())
 		
 		# POST 요청: IsAdmin 권한 추가
 		elif self.request.method == 'POST':
 			permissions.append(IsAdmin())
 		
 		return permissions
-
- 	# 외부 API에서 유저 정보를 가져오는 함수
-	def fetch_user_info(self, email_id=None):
-		try:
-			from URLaddress import workforceURL
-			url = f"http://{workforceURL['ip']}:{workforceURL['port']}/users/"
-			if email_id:
-				url += f"?email_id={email_id}"
-			res = requests.get(url)
-			res.raise_for_status()                
-			return res.json().get("data", {})
-		except requests.exceptions.RequestException as e:
-			return {}
-
+	
+	# 비밀번호 즉시 변경 (비밀번호를 쿼리로 받음)
 	def get(self, request, *args, **kwargs):
-	 
-		# 쿼리 파라미터에서 이메일 ID를 가져옵니다.
 		email_id = request.query_params.get('email_id', None)
-		user_info = self.fetch_user_info(email_id)
-  
-		if user_info:
-			return response.Response({"success": True, "data": user_info})
-		else:
-			if email_id:
-				return response.Response({"success": False, "message": "User not found"}, status=404)
-			else:
-				return response.Response({"success": True, "data": []})
+		new_password = request.query_params.get('new_password', None)  # 새 비밀번호를 쿼리로 받기
 
+		if not email_id or not new_password:
+			return response.Response({"success": False, "message": "Email and new password are required"},
+							 status=status.HTTP_400_BAD_REQUEST)
+
+		try:
+			# 이메일에 해당하는 사용자 검색
+			user = User.objects.get(email=email_id)
+		except User.DoesNotExist:
+			return response.Response({"success": False, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+		# 비밀번호 업데이트 (새 비밀번호로 변경)
+		user.password = make_password(new_password)  # 비밀번호를 해싱해서 저장
+		user.save()
+
+		return response.Response({"success": True, "message": "Password updated successfully"})
+
+	# 새로운 유저 생성
 	def post(self, request, *args, **kwargs):
-     
+	 
 		# 요청에서 사용자 정보 받기
 		username = request.data.get('username')
 		email = request.data.get('email')
@@ -99,6 +82,9 @@ class UserAPIView(views.APIView):
 		# 이메일 중복 체크
 		if User.objects.filter(email=email).exists():
 			return response.Response({"success": False, "message": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+		if User.objects.filter(username=username).exists():
+			return response.Response({"success": False, "message": "username already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
 		try:
 			# 사용자 생성
