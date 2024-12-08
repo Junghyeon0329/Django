@@ -91,6 +91,18 @@ def create_user():
     response = send_api_request_post(url, headers, body)
     print("Created user: ", response)
 
+def login_user():
+    """유저 로그인 함수"""
+    url = "http://127.0.0.1:8000/login/"
+    
+    body = {
+        "username": input("Enter username: "),
+        # "email": input("Enter email: "),
+        "password": input("Enter password: "),
+    }
+    response = send_api_request_post(url, headers = None, body=body)
+    # print("Created user: ", response)
+
 def main():
     """메인 함수 - 사용자가 선택한 옵션에 따라 다른 작업을 수행"""
     global access_token
@@ -101,8 +113,9 @@ def main():
         print("1. Get Access Token")
         print("2. Search user by email")
         print("3. Create user")
+        print("4. Login user")
 
-        choice = input("Enter your choice (1/2/3): ")
+        choice = input("Enter your choice (1/2/3/4): ")
 
         if choice == '1':
             access_token = get_access_token()
@@ -116,6 +129,8 @@ def main():
                 print("Access token is required. Please get the token first.")
             else:
                 create_user()
+        elif choice == '4':
+            login_user()
         else:
             print("Invalid choice. Exiting.")
             sys.exit()
