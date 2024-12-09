@@ -44,6 +44,7 @@ class UserAPIView(views.APIView):
 
 		return permissions
 
+	## 회원탈퇴
 	def delete(self, request, *args, **kwargs):
 		user = request.user  # 현재 로그인된 사용자 가져오기
 		try:

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     
     'rest_framework',
     'rest_framework_simplejwt',    
+    'operation_action.apps.OperationActionConfig',
 ]
 
 REST_FRAMEWORK = {

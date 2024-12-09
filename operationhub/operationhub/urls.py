@@ -19,6 +19,7 @@ from django.urls import path
 
 from operation_action.views import UserAPIView
 from operation_action.workforce import WorkforceAPIView
+from operation_action.board import BoardAPIView
 from operation_action.logins import LoginAPIView
 from rest_framework_simplejwt import views as jwt_views
 
@@ -28,6 +29,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('info/', UserAPIView.as_view(), name='info-api'),
     path('users/', WorkforceAPIView.as_view(), name='user-api'),
+    path('board/', BoardAPIView.as_view(), name='board-api'),
     path('login/', LoginAPIView.as_view(), name='login-api'),    
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh')
