@@ -15,11 +15,9 @@ class BoardAPIView(views.APIView):
 
     # POST 요청: 게시글 생성
     def post(self, request, *args, **kwargs):
-        
-        serializer = BoardSerializer(data=request.data)
-        if serializer.is_valid():            
+        serializer = BoardSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():     
             serializer.save()
             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
