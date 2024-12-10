@@ -2,11 +2,16 @@ from rest_framework import status, response, views
 from .models import Board
 from .serializers import BoardSerializer
 from rest_framework.permissions import IsAuthenticated
+from .permissions import IsAdmin, IsSuperuser
 
 class BoardAPIView(views.APIView):
-	
+    
 	permissions = [IsAuthenticated]
-	
+	def has_delete_permission(self, user, board):
+		if user.is_superuser or user.is_staff:
+			return True
+		return board.author == user 
+ 
 	# GET 요청: 게시글 목록 가져오기
 	def get(self, request, *args, **kwargs):
 		user_id = request.query_params.get('user_id', None)
@@ -54,7 +59,7 @@ class BoardAPIView(views.APIView):
 				return response.Response(
 					{"success": True, "message": "Board deleted successfully"}, status=status.HTTP_200_OK
 				)
-    
+	
 			# 권한이 없으면 403 Forbidden 반환
 			return response.Response({"detail": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -62,8 +67,5 @@ class BoardAPIView(views.APIView):
 			# 게시글이 존재하지 않으면 404 오류 반환
 			return response.Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
 
-	def has_delete_permission(self, user, board):
-		if user.is_superuser or user.is_staff:
-			return True
-		return board.author == user
+
 	
