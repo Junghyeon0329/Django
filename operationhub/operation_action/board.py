@@ -36,3 +36,34 @@ class BoardAPIView(views.APIView):
 			return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 		
 		return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+	# DELETE 요청: 게시글 삭제
+	def delete(self, request, *args, **kwargs):
+		# 쿼리 파라미터에서 board_id 받기
+		board_id = request.query_params.get('board_id')  
+		if not board_id:
+			return response.Response({"detail": "Board ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+		
+		try:
+			# 게시글이 존재하는지 확인
+			board = Board.objects.get(id=board_id)
+
+			# superuser 또는 staff는 추가적인 권한 확인 없이 삭제 가능
+			if self.has_delete_permission(request.user, board):
+				board.delete()
+				return response.Response(
+					{"success": True, "message": "Board deleted successfully"}, status=status.HTTP_200_OK
+				)
+    
+			# 권한이 없으면 403 Forbidden 반환
+			return response.Response({"detail": "You are not authorized to delete this post."}, status=status.HTTP_403_FORBIDDEN)
+
+		except Board.DoesNotExist:
+			# 게시글이 존재하지 않으면 404 오류 반환
+			return response.Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+
+	def has_delete_permission(self, user, board):
+		if user.is_superuser or user.is_staff:
+			return True
+		return board.author == user
+	

@@ -50,8 +50,10 @@ class UserAPIView(views.APIView):
 		try:
 			# 자신의 계정만 삭제 가능하도록 처리
 			user.delete()
-			return response.Response({"success": True, "message": "User account deleted successfully"},
-							 status=status.HTTP_204_NO_CONTENT)
+			return response.Response(
+				{"success": True, "message": "User account deleted successfully"}, 
+				status=status.HTTP_200_OK
+		)
 		except Exception as e:
 			return response.Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 	
