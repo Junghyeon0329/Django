@@ -163,6 +163,49 @@ def Withdrawal():
     response = send_api_request_delete(url, headers)
     print("Deleted user: ", response)
 
+def create_board():
+    """게시판 작성"""
+    if not access_token:
+        print("Access token is required. Please get the token first.")
+        return  # 토큰이 없으면 실행하지 않음
+
+    url = "http://127.0.0.1:8000/board/"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    body = {
+        "title": input("Enter title: "),
+        "content": input("Enter content: ")
+    }
+    response = send_api_request_post(url, headers, body)
+    print("post board: ", response)
+    
+def search_board():
+    """게시판 검색"""
+    if not access_token:
+        print("Access token is required. Please get the token first.")
+        return  # 토큰이 없으면 실행하지 않음
+
+    url = "http://127.0.0.1:8000/board/"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    # user_id를 입력받을 때, 입력이 없으면 None으로 처리
+    user_id = input("user_id (optional, press Enter to skip): ").strip()
+
+    # user_id가 입력되었을 경우에만 params에 추가
+    params = {}
+    if user_id:
+        params["user_id"] = user_id
+
+    # API 요청 보내기
+    response = send_api_request_get(url, headers, params)
+    print("board_content: ", response)
+    
+    
 # ========================
 # Main function (Menu)
 # ========================
@@ -179,9 +222,11 @@ def main():
         print("4. Withdrawal")
         print("5. Login user")
         print("6. Search user by email")
-        print("7. Exit")
+        print("7. Search board by user_id")
+        print("8. Create board")
+        print("9. Exit")
 
-        choice = input("Enter your choice (1/2/3/4/5/6/7): ")
+        choice = input("Enter your choice (1/2/3/4/5/6/7/8/9): ")
 
         if choice == '1':
             access_token = get_access_token()
@@ -212,8 +257,20 @@ def main():
                 print("Access token is required. Please get the token first.")
             else:
                 get_user_by_email()
-        
+                
         elif choice == '7':
+            if not access_token:
+                print("Access token is required. Please get the token first.")
+            else:
+                search_board()
+        
+        elif choice == '8':
+            if not access_token:
+                print("Access token is required. Please get the token first.")
+            else:
+                create_board()
+        
+        elif choice == '9':
             print("Exiting.")
             sys.exit()
         

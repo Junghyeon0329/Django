@@ -9,14 +9,20 @@ class BoardAPIView(views.APIView):
 	
 	# GET 요청: 게시글 목록 가져오기
 	def get(self, request, *args, **kwargs):
-		if request.user.is_superuser or request.user.is_staff:
-			user_id = request.query_params.get('user_id', None)
+		user_id = request.query_params.get('user_id', None)
+		if request.user.is_superuser or request.user.is_staff:	
 			if user_id:
 				boards = Board.objects.filter(author_id=user_id).order_by('-created_at')
 			else:
 				boards = Board.objects.all().order_by('-created_at')            
 		else:
-			# 일반 사용자는 자신의 게시글만 반환
+			# 일반 사용자는 자신의 게시글만 조회할 수 있음
+			if user_id:
+				# 일반 사용자가 자신 외의 다른 사람의 게시글을 요청하면 403 Forbidden 에러 반환
+				if int(user_id) != request.user.id:
+					return response.Response({"detail": "You are not authorized to view this user's posts."}, status=status.HTTP_403_FORBIDDEN)
+			
+			# 일반 사용자는 자신의 게시글만 조회
 			boards = Board.objects.filter(author=request.user).order_by('-created_at')
 		
 		serializer = BoardSerializer(boards, many=True)  # 여러 개의 게시글을 직렬화
