@@ -1,106 +1,104 @@
-from django.shortcuts import render
-from rest_framework import viewsets, serializers, response, views, status
-from rest_framework.permissions import IsAuthenticated, BasePermission
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
-from .permissions import IsAdmin, IsAdminOrOwner  # permissions.py에서 가져옴
-
-import requests
+from rest_framework import response, status, views
+from rest_framework.permissions import IsAuthenticated
+from .permissions import IsAdmin
 
 class UserAPIView(views.APIView):
-	def get_permissions(self):
-		permissions = [IsAuthenticated()]
 
-		# GET, POST 요청에서 관리자 권한을 추가
-		if self.request.method in ['GET', 'POST']:
-			permissions.append(IsAdmin())
-		
-		# DELETE 요청에서 자기 자신만 삭제 가능하도록 처리
-		elif self.request.method == 'DELETE':
-			pass # 모든 로그인 사용자에게 권한 부여  
+    def get_permissions(self):
+        """
+			권한 설정 메서드.
+			GET/POST 요청에 IsAdmin 권한을 추가하고, DELETE 요청에 자기 자신만 삭제 가능하도록 설정.
+        """
+        permissions = [IsAuthenticated()]
 
-		return permissions
+        # GET/POST 요청에서 관리자 권한 추가
+        if self.request.method in ['GET', 'POST']:
+            permissions.append(IsAdmin())
+        
+        # DELETE 요청에서 자기 자신만 삭제 가능하도록 처리
+        elif self.request.method == 'DELETE':
+            pass  # 모든 로그인 사용자에게 권한 부여  
 
-	## 회원탈퇴
-	def delete(self, request, *args, **kwargs):
-		user = request.user  # 현재 로그인된 사용자 가져오기
-		try:
-			# 자신의 계정만 삭제 가능하도록 처리
-			user.delete()
-			return response.Response(
-				{"success": True, "message": "User account deleted successfully"}, 
-				status=status.HTTP_200_OK
-		)
-		except Exception as e:
-			return response.Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-	
-	# 비밀번호 즉시 변경 (비밀번호를 쿼리로 받음)
-	def get(self, request, *args, **kwargs):
-		email_id = request.query_params.get('email_id', None)
-		new_password = request.query_params.get('new_password', None)  # 새 비밀번호를 쿼리로 받기
+        return permissions
 
-		if not email_id or not new_password:
-			return response.Response({"success": False, "message": "Email and new password are required"},
-							 status=status.HTTP_400_BAD_REQUEST)
+    def get_error_response(self, message, status_code):
+        """
+        	공통적인 에러 응답을 생성하는 메서드.
+        """
+        return response.Response({"success": False, "message": message}, status=status_code)
 
-		try:
-			# 이메일에 해당하는 사용자 검색
-			user = User.objects.get(email=email_id)
-		except User.DoesNotExist:
-			return response.Response({"success": False, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    def get_success_response(self, message, data=None):
+        """
+        	공통적인 성공 응답을 생성하는 메서드.
+        """
+        return response.Response({"success": True, "message": message, "data": data})
 
-		# 비밀번호 업데이트 (새 비밀번호로 변경)
-		user.password = make_password(new_password)  # 비밀번호를 해싱해서 저장
-		user.save()
+    def get(self, request, *args, **kwargs):
+        """
+        	비밀번호 변경 API (쿼리로 받은 이메일과 새 비밀번호로 비밀번호 변경)
+        """
+        email = request.query_params.get('email_id')
+        new_password = request.query_params.get('new_password')
 
-		return response.Response({"success": True, "message": "Password updated successfully"})
+        if not email or not new_password:
+            return self.get_error_response("Email and new password are required", status.HTTP_400_BAD_REQUEST)
 
-	# 새로운 유저 생성
-	def post(self, request, *args, **kwargs):
-	 
-		# 요청에서 사용자 정보 받기
-		username = request.data.get('username')
-		email = request.data.get('email')
-		password = request.data.get('password')
-		is_superuser = request.data.get('is_superuser', False)  # 기본값은 False
-		is_staff = request.data.get('is_staff', False)          # 기본값은 False
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return self.get_error_response("User not found", status.HTTP_404_NOT_FOUND)
 
-		# 필수 입력값 체크
-		if not username or not email or not password:
-			return response.Response({"success": False, "message": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+        user.password = make_password(new_password)
+        user.save()
 
-		# 이메일 중복 체크
-		if User.objects.filter(email=email).exists():
-			return response.Response({"success": False, "message": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        return self.get_success_response("Password updated successfully")
 
-		if User.objects.filter(username=username).exists():
-			return response.Response({"success": False, "message": "username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        """
+        	새로운 사용자 생성 API
+        """
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        is_superuser = request.data.get('is_superuser', False)
+        is_staff = request.data.get('is_staff', False)
 
-		try:
-			# 사용자 생성
-			user = User.objects.create_user(username=username, email=email, password=password)
-			
-			if is_superuser:
-				user.is_superuser = True
-				user.is_staff = True  # superuser는 staff도 True로 설정해야 함
-			else:
-				user.is_superuser = is_superuser
-				user.is_staff = is_staff  # 프론트에서 받은 is_staff 값 그대로 사용
-			
-			user.save()
+        # 필수 입력값 체크
+        if not username or not email or not password:
+            return self.get_error_response("Missing required fields", status.HTTP_400_BAD_REQUEST)
 
-			return response.Response({
-				"success": True,
-				"message": "User created successfully",
-				"data": {
-					"username": user.username,
-					"email": user.email,
-					"is_superuser": user.is_superuser,
-					"is_staff": user.is_staff
-				}
-			})
-		
-		except Exception as e:
-			return response.Response({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if User.objects.filter(email=email).exists():
+            return self.get_error_response("Email already exists", status.HTTP_400_BAD_REQUEST)
 
-		
+        if User.objects.filter(username=username).exists():
+            return self.get_error_response("Username already exists", status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # 사용자 생성
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.is_superuser = is_superuser
+            user.is_staff = is_superuser or is_staff  # superuser일 경우 staff도 True로 설정
+
+            user.save()
+
+            return self.get_success_response(
+                "User created successfully",
+                {"username": user.username, "email": user.email, "is_superuser": user.is_superuser, "is_staff": user.is_staff}
+            )
+        
+        except Exception as e:
+            return self.get_error_response(str(e), status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, *args, **kwargs):
+        """
+        	회원 탈퇴 API (자신의 계정만 삭제 가능)
+        """
+        user = request.user  # 현재 로그인된 사용자
+
+        try:
+            user.delete()
+            return self.get_success_response("User account deleted successfully")
+        except Exception as e:
+            return self.get_error_response(str(e), status.HTTP_500_INTERNAL_SERVER_ERROR)
