@@ -34,7 +34,7 @@ class File(models.Model):
     description = models.TextField(blank=True, null=True)  # 파일에 대한 설명
 
     class Meta:
-        db_table = 'files'
+        db_table = 'board_files'
 
     def __str__(self):
         return self.name
