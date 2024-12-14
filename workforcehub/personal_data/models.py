@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 
 class User(models.Model):
     username = models.CharField(max_length=100)
@@ -10,7 +11,7 @@ class User(models.Model):
     address = models.CharField(max_length=255, default='No address provided')
     nationality = models.CharField(max_length=50, default='korea')
     photo = models.ImageField(upload_to='employee_photos/', null=True, blank=True)
-    hire_date = models.DateField(null=True, blank=True)
+    hire_date = models.DateField(null=True, default=datetime.date.today)
     resignation_date = models.DateField(null=True, blank=True)
     employment_status = models.CharField(
         max_length=20,
@@ -24,8 +25,6 @@ class User(models.Model):
     emergency_contact_phone = models.CharField(max_length=20)
     work_experience = models.TextField(null=True, blank=True)
     education_and_certifications = models.TextField(null=True, blank=True)
-    skills = models.TextField(null=True, blank=True)
-    performance_review = models.TextField(null=True, blank=True)
 
     @classmethod
     def create_user(cls, username, email_id, phone_number, emergency_contact_phone, **extra_fields):

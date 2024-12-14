@@ -25,6 +25,7 @@ class UserViewSet(viewsets.ModelViewSet):
 		"""
 		return response.Response({"success": True, "message": message, "data": data})
 
+	## 사원 등록
 	def create(self, request, *args, **kwargs):
 		data = request.data
 
@@ -67,6 +68,7 @@ class UserViewSet(viewsets.ModelViewSet):
 		except Exception as e:
 			return self.get_error_response(str(e), status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+	## 사원 검색
 	def list(self, request, *args, **kwargs):
 		email_id = request.query_params.get('email_id', None)
 		queryset = self.get_queryset()
@@ -79,3 +81,31 @@ class UserViewSet(viewsets.ModelViewSet):
 				return response.Response({"success": True, "data": serializer.data})				
 		serializer = self.get_serializer(queryset, many=True)
 		return response.Response({"success": True, "data": serializer.data})
+
+	## 사원 정보 변경
+	def update(self, request, *args, **kwargs):
+		data = request.data
+
+		# 요청된 'id'로 사용자 객체를 찾습니다.
+		user_id = kwargs.get('pk')
+		try:
+			user = User.objects.get(id=user_id)
+		except User.DoesNotExist:
+			return self.get_error_response("User not found", status.HTTP_404_NOT_FOUND)
+
+		# 전달된 데이터에서 사용자가 수정하려는 항목을 확인하고 업데이트
+		for field, value in data.items():
+			if hasattr(user, field):  # 해당 필드가 모델에 있는지 확인
+				setattr(user, field, value)
+
+		try:
+			user.save()  # 사용자 객체 저장
+			return self.get_success_response(
+				"User updated successfully",
+				{"username": user.username, "email": user.email_id}
+			)
+		except Exception as e:
+			return self.get_error_response(f"Error occurred: {str(e)}", status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+	def partial_update(self, request, *args, **kwargs):
+		return self.update(request, *args, **kwargs)  # update 메서드를 재사용
