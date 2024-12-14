@@ -20,8 +20,8 @@ def main():
 
 if __name__ == '__main__':
     # https://docs.djangoproject.com/ko/5.1/intro/tutorial01/   
-    # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))       
-    # from URLaddress import workforceURL
-    # sys.argv = ['manage.py', 'runserver', f"{workforceURL['ip']}:{workforceURL['port']}"]
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))       
+    from URLaddress import workforceURL
+    sys.argv = ['manage.py', 'runserver', f"{workforceURL['ip']}:{workforceURL['port']}"]
     main()
 

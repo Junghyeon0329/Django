@@ -27,6 +27,16 @@ class User(models.Model):
     skills = models.TextField(null=True, blank=True)
     performance_review = models.TextField(null=True, blank=True)
 
+    @classmethod
+    def create_user(cls, username, email_id, phone_number, emergency_contact_phone, **extra_fields):
+        # 새로운 사용자 인스턴스를 생성
+        user = cls(username=username, email_id=email_id, phone_number=phone_number, emergency_contact_phone=emergency_contact_phone, **extra_fields)
+        
+        # 추가적인 검증이나 로직을 넣을 수도 있음 (예: 비밀번호 해싱, 이메일 유효성 검사 등)
+        
+        user.save()  # 데이터베이스에 저장
+        return user
+
     class Meta:
         db_table = "user_info"
 
