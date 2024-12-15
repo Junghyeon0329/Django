@@ -136,5 +136,4 @@ class UserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return self.get_error_response(f"Error occurred: {str(e)}", status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    partial_update = update  # partial_update와 update는 동일하므로, partial_update는 update로 연결
-
+    partial_update = update

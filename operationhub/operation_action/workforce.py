@@ -11,12 +11,8 @@ class WorkforceAPIView(views.APIView):
 	def get_permissions(self):
 		permissions = [IsAuthenticated()]
 
-		# GET 요청: IsAdminOrOwner 권한 추가
-		if self.request.method == 'GET':
-			permissions.append(IsAdminOrOwner())
-		
-		# POST 요청: IsAdmin 권한 추가
-		elif self.request.method == 'POST':
+		# GET/POST/DELETE 요청에서 관리자 권한 추가
+		if self.request.method in ['GET', 'POST', 'DELETE']:
 			permissions.append(IsAdmin())
 		
 		return permissions
@@ -47,3 +43,49 @@ class WorkforceAPIView(views.APIView):
 				return response.Response({"success": False, "message": "User not found"}, status=404)
 			else:
 				return response.Response({"success": True, "data": []})
+
+
+	def post_user_info(self):
+		try:
+			from URLaddress import workforceURL
+			url = f"http://{workforceURL['ip']}:{workforceURL['port']}/users/"
+			res = requests.post(url)
+			res.raise_for_status()
+			return res.json().get("data", {})
+		except requests.exceptions.RequestException as e:
+			return {}
+
+	def post(self, request, *args, **kwargs):
+		# 필수 파라미터 받기
+		username = request.query_params.get('username')
+		phone_number = request.query_params.get('phone_number')
+		email_id = request.query_params.get('email_id')
+		emergency_contact_phone = request.query_params.get('emergency_contact_phone')
+
+		# 필수 정보가 없으면 에러 응답
+		if not username or not phone_number or not email_id or not emergency_contact_phone:
+			return response.JsonResponse({'error': 'Missing required fields.'}, status=400)
+
+		# 선택적 정보 받기 (기타 정보는 request.data로 받을 수 있습니다)
+		additional_info = {}
+		for key, value in request.query_params.items():
+			if key not in ['username', 'phone_number', 'email_id', 'emergency_contact_phone']:
+				additional_info[key] = value
+
+		# 데이터 준비 (필수 정보 + 선택적 정보)
+		user_data = {
+			'username': username,
+			'phone_number': phone_number,
+			'email_id': email_id,
+			'emergency_contact_phone': emergency_contact_phone,
+			**additional_info  # 선택적 정보를 추가
+		}
+
+		# post_user_info 함수에 user_data 전달
+		result = self.post_user_info(user_data)
+
+		# 결과 반환
+		if 'error' in result:
+			return response.JsonResponse({'error': result['error']}, status=500)
+
+		return response.JsonResponse(result, status=200)
