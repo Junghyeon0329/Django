@@ -5,87 +5,73 @@ from django.contrib.auth.models import User
 from .permissions import IsAdmin, IsAdminOrOwner  # permissions.py에서 가져옴
 
 import requests
+from requests.exceptions import RequestException, HTTPError
 
 class WorkforceAPIView(views.APIView):
 
-	def get_permissions(self):
-		permissions = [IsAuthenticated()]
+    def get_permissions(self):
+        permissions = [IsAuthenticated()]
+        if self.request.method in ['GET', 'POST', 'DELETE']:
+            permissions.append(IsAdmin())
+        return permissions
 
-		# GET/POST/DELETE 요청에서 관리자 권한 추가
-		if self.request.method in ['GET', 'POST', 'DELETE']:
-			permissions.append(IsAdmin())
-		
-		return permissions
+    def make_api_request(self, method, endpoint, data=None):
+ 
+        try:
+            from URLaddress import workforceURL
+            url = f"http://{workforceURL['ip']}:{workforceURL['port']}/{endpoint}"
 
- 	# 외부 API에서 유저 정보를 가져오는 함수
-	def fetch_user_info(self, email_id=None):
-		try:
-			from URLaddress import workforceURL
-			url = f"http://{workforceURL['ip']}:{workforceURL['port']}/users/"
-			if email_id:
-				url += f"?email_id={email_id}"
-			res = requests.get(url)
-			res.raise_for_status()                
-			return res.json().get("data", {})
-		except requests.exceptions.RequestException as e:
-			return {}
+            if method == 'GET':
+                # GET 요청일 경우 쿼리 파라미터로 데이터 전달
+                response = requests.get(url, params=data)  # params는 URL에 쿼리 파라미터를 추가하는 방식
+            elif method == 'POST':
+                # POST 요청일 경우 JSON 데이터로 전송
+                response = requests.post(url, json=data)  # json은 요청 본문에 JSON 형식으로 데이터를 전달
+            else:
+                raise ValueError("Unsupported HTTP method")
 
-	def get(self, request, *args, **kwargs):
-	 
-		# 쿼리 파라미터에서 이메일 ID를 가져옵니다.
-		email_id = request.query_params.get('email_id', None)
-		user_info = self.fetch_user_info(email_id)
-  
-		if user_info:
-			return response.Response({"success": True, "data": user_info})
-		else:
-			if email_id:
-				return response.Response({"success": False, "message": "User not found"}, status=404)
-			else:
-				return response.Response({"success": True, "data": []})
+            # HTTP 상태 코드가 4xx, 5xx인 경우 예외 발생
+            response.raise_for_status()
+            return response.json().get("data", {})
 
+        except HTTPError as http_err:
+            return {'error': f"HTTP error occurred: {http_err}, Response: {response.text}"}
+        except RequestException as e:
+            return {'error': f"Request error occurred: {e}"}
 
-	def post_user_info(self):
-		try:
-			from URLaddress import workforceURL
-			url = f"http://{workforceURL['ip']}:{workforceURL['port']}/users/"
-			res = requests.post(url)
-			res.raise_for_status()
-			return res.json().get("data", {})
-		except requests.exceptions.RequestException as e:
-			return {}
+    def get(self, request, *args, **kwargs):
+ 
+        email_id = request.query_params.get('email_id')
+        user_info = self.make_api_request('GET', 'users/', {'email_id': email_id})
 
-	def post(self, request, *args, **kwargs):
-		# 필수 파라미터 받기
-		username = request.query_params.get('username')
-		phone_number = request.query_params.get('phone_number')
-		email_id = request.query_params.get('email_id')
-		emergency_contact_phone = request.query_params.get('emergency_contact_phone')
+        if user_info:
+            return response.Response({"success": True, "data": user_info})
+        elif email_id:
+            return response.Response({"success": False, "message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return response.Response({"success": True, "data": []})
 
-		# 필수 정보가 없으면 에러 응답
-		if not username or not phone_number or not email_id or not emergency_contact_phone:
-			return response.JsonResponse({'error': 'Missing required fields.'}, status=400)
+    def post(self, request, *args, **kwargs):
 
-		# 선택적 정보 받기 (기타 정보는 request.data로 받을 수 있습니다)
-		additional_info = {}
-		for key, value in request.query_params.items():
-			if key not in ['username', 'phone_number', 'email_id', 'emergency_contact_phone']:
-				additional_info[key] = value
+        user_data = {
+            'username': request.data.get('username'),
+            'phone_number': request.data.get('phone_number'),
+            'email_id': request.data.get('email_id'),
+            'emergency_contact_phone': request.data.get('emergency_contact_phone')
+        }
 
-		# 데이터 준비 (필수 정보 + 선택적 정보)
-		user_data = {
-			'username': username,
-			'phone_number': phone_number,
-			'email_id': email_id,
-			'emergency_contact_phone': emergency_contact_phone,
-			**additional_info  # 선택적 정보를 추가
-		}
+        # 필수 정보가 없으면 에러 응답
+        if not all(user_data.values()):
+            return response.Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
 
-		# post_user_info 함수에 user_data 전달
-		result = self.post_user_info(user_data)
+        # 선택적 정보 받기 (기타 정보는 request.data로 받을 수 있습니다)
+        optional_fields = {key: value for key, value in request.data.items() if key not in user_data}
+        user_data.update(optional_fields)
 
-		# 결과 반환
-		if 'error' in result:
-			return response.JsonResponse({'error': result['error']}, status=500)
+        # 외부 API에 유저 정보 전달
+        result = self.make_api_request('POST', 'users/', user_data)
 
-		return response.JsonResponse(result, status=200)
+        if 'error' in result:
+            return response.Response({'error': result['error']}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return response.Response(result, status=status.HTTP_200_OK)

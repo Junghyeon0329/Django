@@ -18,19 +18,19 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_error_response(self, message, status_code):
         """
-        공통적인 에러 응답을 생성하는 메서드.
+            공통적인 에러 응답을 생성하는 메서드.
         """
         return response.Response({"success": False, "message": message}, status=status_code)
 
     def get_success_response(self, message, data=None):
         """
-        공통적인 성공 응답을 생성하는 메서드.
+            공통적인 성공 응답을 생성하는 메서드.
         """
         return response.Response({"success": True, "message": message, "data": data})
 
     def check_api_host(self, request):
         """
-        요청의 출처를 확인하는 메서드.
+            요청의 출처를 확인하는 메서드.
         """
         host = request.get_host().split(":")[0]  # 포트를 제외한 호스트 이름만 가져옴
         print(f"Request host: {host}")
@@ -38,7 +38,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def check_and_validate_api(self, request):
         """
-        API 요청의 출처를 검증하고, 출처가 허용되지 않으면 401 응답을 반환.
+            API 요청의 출처를 검증하고, 출처가 허용되지 않으면 401 응답을 반환.
         """
         if not self.check_api_host(request):
             return self.get_error_response("Unauthorized", status.HTTP_401_UNAUTHORIZED)
@@ -46,7 +46,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def handle_missing_fields(self, data, required_fields):
         """
-        필수 필드가 누락된 경우 에러 응답을 반환.
+            필수 필드가 누락된 경우 에러 응답을 반환.
         """
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
@@ -55,7 +55,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def handle_extra_fields(self, data, required_fields):
         """
-        선택적 필드를 처리하여 반환.
+            선택적 필드를 처리하여 반환.
         """
         extra_fields = {}
         for field in User._meta.get_fields():
@@ -79,7 +79,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # 선택적 필드 처리
         extra_fields = self.handle_extra_fields(data, required_fields)
-
+            
+        # email_id 중복 검사
+        
+        if User.objects.filter(email_id=data['email_id']).exists():
+            return self.get_error_response("Email ID already exists.", status.HTTP_400_BAD_REQUEST)
+        
         try:
             user = User.objects.create(
                 username=data['username'],
