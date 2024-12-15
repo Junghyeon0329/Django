@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from rest_framework import response, status, views
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsAdmin
 
 class UserAPIView(views.APIView):
 

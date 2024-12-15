@@ -2,7 +2,6 @@ from django.shortcuts import render
 from rest_framework import viewsets, serializers, response, views, status
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from django.contrib.auth.models import User
-from .permissions import IsAdmin, IsAdminOrOwner  # permissions.py에서 가져옴
 
 import requests
 from requests.exceptions import RequestException, HTTPError
