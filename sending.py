@@ -1,14 +1,7 @@
 import requests
 import sys
 
-# ========================
-# Constants
-# ========================
 BASE_URL = "http://127.0.0.1:8000"  # API의 기본 URL
-
-# ========================
-# Global variable to store access_token
-# ========================
 access_token = None
 
 # ========================
@@ -32,34 +25,16 @@ def send_api_request(method, url, headers, body=None, params=None):
 # Authentication functions
 # ========================
 
-def get_access_token():
-    """Access token을 받아오는 함수"""
-    global access_token  # Global access_token을 사용
-    if access_token:
-        print("You already have an access token.")
-        return access_token  # 이미 토큰이 있으면 반환
-
-    url = f"{BASE_URL}/api/token/"
-    body = {
-        "username": input("Enter username: "),
-        "password": input("Enter password: ")
-    }
-    response = send_api_request("POST", url, headers=None, body=body)
-    if response:
-        access_token = response['access']
-        return access_token
-    else:
-        print("Failed to receive access token")
-        return None
-
+"""유저 로그인 함수"""
 def login_user():
-    """유저 로그인 함수"""
+    
     global access_token
     url = f"{BASE_URL}/login/"
     body = {
-        "username": input("Enter username: "),
+        "email": input("Enter email: "),
         "password": input("Enter password: "),
     }
+    print()
     response = send_api_request("POST", url, headers=None, body=body)
     if response:
         access_token = response['access']
@@ -69,71 +44,53 @@ def login_user():
         return None
 
 # ========================
-# User-related API functions
+# User-related API functions(usermanage.py)
 # ========================
 
-def get_user_by_email():
-    """Email로 유저 정보를 조회하는 함수"""
-    if not access_token:
-        print("Access token is required. Please get the token first.")
-        return
-
-    url = f"{BASE_URL}/users/"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-    params = {"email_id": input("Enter email ID to search: ")}
-    response = send_api_request("GET", url, headers=headers, params=params)
-    print("User info: ", response)
-
+"""새 유저를 생성하는 함수"""
 def create_user():
-    """새 유저를 생성하는 함수"""
-    if not access_token:
-        print("Access token is required. Please get the token first.")
-        return
-
-    url = f"{BASE_URL}/info/"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
+   
+    url = f"{BASE_URL}/user/"
     body = {
-        "username": input("Enter username: "),
         "email": input("Enter email: "),
         "password": input("Enter password: "),
         "is_superuser": False,
         "is_staff": False
     }
-    response = send_api_request("POST", url, headers=headers, body=body)
+    print()
+    response = send_api_request("POST", url, headers=None, body=body)
     print("Created user: ", response)
-
+    
+"""비밀번호를 초기화하는 함수"""
 def reset_password():
-    """비밀번호를 초기화하는 함수"""
+   
     if not access_token:
         print("Access token is required. Please get the token first.")
         return
 
-    url = f"{BASE_URL}/info/"
+    url = f"{BASE_URL}/user/"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
-    params = {
-        "email_id": input("Enter email: "),
-        "new_password": input("Enter new password: "),
+    body = {
+        "email": input("Enter email: "),
+        "current_password": input("Enter current password: "),
+        "new_password": input("Enter new password: ")
     }
-    response = send_api_request("GET", url, headers=headers, params=params)
+    print()
+    response = send_api_request("PUT", url, headers=headers, body=body)
     print("Password reset: ", response)
-
+    
+"""유저 회원탈퇴 함수"""
 def withdrawal():
-    """유저 회원탈퇴 함수"""
+    
     global access_token
     if not access_token:
         print("Access token is required. Please get the token first.")
         return
 
-    url = f"{BASE_URL}/info/"
+    url = f"{BASE_URL}/user/"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
@@ -151,8 +108,9 @@ def withdrawal():
 # Board-related API functions
 # ========================
 
+"""게시판 작성"""
 def create_board():
-    """게시판 작성"""
+ 
     if not access_token:
         print("Access token is required. Please get the token first.")
         return
@@ -166,11 +124,13 @@ def create_board():
         "title": input("Enter title: "),
         "content": input("Enter content: ")
     }
+    print()
     response = send_api_request("POST", url, headers=headers, body=body)
     print("Post board: ", response)
 
+"""게시판 검색"""
 def search_board():
-    """게시판 검색"""
+
     if not access_token:
         print("Access token is required. Please get the token first.")
         return
@@ -193,8 +153,9 @@ def search_board():
     response = send_api_request("GET", url, headers=headers, params=params)
     print("Board content: ", response)
 
+"""게시판 삭제"""
 def delete_board():
-    """게시판 삭제"""
+
     if not access_token:
         print("Access token is required. Please get the token first.")
         return
@@ -208,6 +169,7 @@ def delete_board():
     params = {
         "board_id": input("Enter board_id: "),
     }
+    print()
     response = send_api_request("DELETE", url, headers=headers, params=params)
     if response:
         print("Board deleted successfully.")
@@ -217,31 +179,6 @@ def delete_board():
 # ========================
 # Main function (Menu)
 # ========================
-
-def user_menu():
-    """유저 관련 메뉴"""
-    while True:
-        print("\nUser Information Menu:")
-        print("1. Create User")
-        print("2. Reset Password")
-        print("3. Withdrawal")
-        print("4. Search User by Email")
-        print("5. Back to Main Menu")
-
-        choice = input("Enter your choice (1/2/3/4/5): ")
-
-        if choice == '1':
-            create_user()
-        elif choice == '2':
-            reset_password()
-        elif choice == '3':
-            withdrawal()
-        elif choice == '4':
-            get_user_by_email()
-        elif choice == '5':
-            break  # Main menu로 돌아가기
-        else:
-            print("Invalid choice. Please try again.")
 
 def board_menu():
     """게시판 관련 메뉴"""
@@ -273,26 +210,36 @@ def main():
             print("\nPlease get an Access Token first by selecting option 1.")
         
         print("\nChoose an option:")
-        print("1. Login")
-        print("2. User Information")
-        print("3. Board")
-        print("4. Exit")
+        print("1. 로그인")
+        print("2. 회원가입")
+        print("3. 회원탈퇴")
+        print("4. 비밀번호변경")        
+        print("5. 게시판")
+        print("6. Exit")
 
-        choice = input("Enter your choice (1/2/3/4): ")
+        choice = input("Enter your choice (1/2/3/4/5/6): ")
 
         if choice == '1':
             access_token = login_user()  # 로그인 시 토큰 받기
-        elif choice == '2':
-            if access_token:  # 토큰이 없으면 메뉴 진행 안됨
-                user_menu()  # 유저 관련 메뉴로 이동
-            else:
-                print("Please get an Access Token first (Option 1).")
+            
+        elif choice == '2': create_user()
+        
         elif choice == '3':
-            if access_token:  # 토큰이 없으면 메뉴 진행 안됨
-                board_menu()  # 게시판 메뉴로 이동
+            if access_token: withdrawal()  
             else:
                 print("Please get an Access Token first (Option 1).")
+                
         elif choice == '4':
+            if access_token: reset_password()  
+            else:
+                print("Please get an Access Token first (Option 1).")
+                
+        elif choice == '5':
+            if access_token: board_menu()  
+            else:
+                print("Please get an Access Token first (Option 1).")
+                
+        elif choice == '6':
             print("Exiting.")
             sys.exit()
         else:

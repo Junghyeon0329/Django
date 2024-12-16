@@ -2,8 +2,8 @@ from django.urls import path
 from django.contrib import admin
 from rest_framework_simplejwt import views as jwt_views
 
-from operation_action.manage import UserAPIView, LoginAPIView
-from operation_action.board import BoardAPIView
+from operation_action.usermanage import UserAPIView, LoginAPIView
+from operation_action.userboard import BoardAPIView
 from operation_action.workforce_API import WorkforceAPIView
 
 

@@ -15,7 +15,7 @@ class WorkforceAPIView(views.APIView):
             permissions.append(IsAdminUser())
         return permissions
 
-    """ 새로운 인사 인원 생성 API"""
+    """ 새로운 인사 인원 생성 API""" # 넣을때 임시로 밀어넣고 나중에 승인 받기 구현해주세요
     def post(self, request, *args, **kwargs):
 
         user_data = {
@@ -66,7 +66,7 @@ class WorkforceAPIView(views.APIView):
     """ 인사 인원 정보 요청 API"""
     def get(self, request, *args, **kwargs):
         # 쿼리 파라미터에서 email_id 가져오기
-        email_id = request.data.get('email_id')
+        email_id = request.query_params.get('email_id')
 
         # URL 설정
         try:
