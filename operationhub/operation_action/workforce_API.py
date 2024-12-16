@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets, serializers, response, views, status
+from rest_framework import response, views, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
 
@@ -15,23 +15,32 @@ class WorkforceAPIView(views.APIView):
             permissions.append(IsAdminUser())
         return permissions
 
-    """ 새로운 인사 인원 생성 API""" # 넣을때 임시로 밀어넣고 나중에 승인 받기 구현해주세요
-    def post(self, request, *args, **kwargs):
+    """ 새로운 인사 인원 생성 API""" 
+    def post(self, request, *args, **kwargs):        
+        
+        email = request.data.get('email', None)
+        if not email:
+            return response.Response(
+                {"success": False, "message": "email_id ID is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        user_data = {
-            'username': request.data.get('username'),
-            'phone_number': request.data.get('phone_number'),
-            'email_id': request.data.get('email_id'),
-            'emergency_contact_phone': request.data.get('emergency_contact_phone')
-        }
-
-        # 필수 정보가 없으면 에러 응답
+        try:
+            user = User.objects.get(email=email)
+            user_data = {'username' : user.username, 'email_id' : email}
+            
+        except User.DoesNotExist:
+            return response.Response(
+                {"success": False, "message": "User with this email ID does not exist."},
+                status=status.HTTP_404_NOT_FOUND
+            )       
+        
         if not all(user_data.values()):
             return response.Response(
                 {"success": False, "message": "Missing required fields."},
                 status=status.HTTP_400_BAD_REQUEST
-            )
-
+            )        
+        
         # 선택적 정보 받기 (기타 정보는 request.data로 받을 수 있습니다)
         optional_fields = {key: value for key, value in request.data.items() if key not in user_data}
         user_data.update(optional_fields)
@@ -42,14 +51,15 @@ class WorkforceAPIView(views.APIView):
             url = f"http://{workforceURL['ip']}:{workforceURL['port']}/users/"
 
             # POST 요청 전송
-            response = requests.post(url, json=user_data)
+            res = requests.post(url, json=user_data)
 
             # HTTP 상태 코드가 4xx, 5xx인 경우 예외 발생
-            response.raise_for_status()
-
-            # 결과 반환
-            result = response.json().get("data", {})
-            return response.Response(result, status=status.HTTP_200_OK)
+            res.raise_for_status()
+            
+            return response.Response(
+					{"success": True, "message": "User created successfully."},
+					status=status.HTTP_201_CREATED
+            )
 
         except HTTPError as http_err:
             return response.Response(

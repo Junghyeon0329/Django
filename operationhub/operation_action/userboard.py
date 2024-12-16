@@ -13,14 +13,20 @@ class BoardAPIView(views.APIView):
         
         if serializer.is_valid():
             serializer.save()
-            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return response.Response(
+					{"success": True, "message": "Board created successfully."},
+					status=status.HTTP_201_CREATED
+				)
+            
+        return response.Response(
+				{"success": False, "message": "Board is not valid"},
+				status=status.HTTP_400_BAD_REQUEST
+			)
     
     """ DELETE 요청: 게시글 삭제 -board_id- """ 
     def delete(self, request, *args, **kwargs):
        
-        board_id = request.data.get('board_id')
+        board_id = request.data.get('board_id', None)
 
         # board_id가 없으면 400 오류 반환
         if not board_id:
@@ -90,5 +96,7 @@ class BoardAPIView(views.APIView):
 
         # 게시글을 직렬화하고 반환
         serializer = BoardSerializer(boards, many=True)
-        return response.Response(serializer.data)
-   
+        return response.Response(
+            {"success": True, "data": serializer.data},  # 응답 구조화
+            status=status.HTTP_200_OK
+        )

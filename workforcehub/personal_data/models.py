@@ -3,7 +3,7 @@ import datetime
 
 class User(models.Model):
     username = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=100, default='N/A')
     email_id = models.CharField(max_length=500)
     position = models.CharField(max_length=100, default='Employee')
     department = models.CharField(max_length=100, default='None')
@@ -22,9 +22,11 @@ class User(models.Model):
     bonus = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     vacation_days = models.IntegerField(default='12')
     emergency_contact_name = models.CharField(max_length=100, default='N/A')
-    emergency_contact_phone = models.CharField(max_length=20)
+    emergency_contact_phone = models.CharField(max_length=20, default='N/A')
     work_experience = models.TextField(null=True, blank=True)
     education_and_certifications = models.TextField(null=True, blank=True)
+    permission = models.TextField(default=False)
+    approval_date = models.DateField(null=True, blank=True)
 
     @classmethod
     def create_user(cls, username, email_id, phone_number, emergency_contact_phone, **extra_fields):
