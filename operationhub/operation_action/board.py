@@ -1,11 +1,12 @@
 from rest_framework import status, response, views, permissions
 from .models import Board
 from .serializers import BoardSerializer
+from django.contrib.auth.models import User
 
 class BoardAPIView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
      
-    """ POST 요청: 게시글 생성 """
+    """ POST 요청: 게시글 생성 -title, content- """
     def post(self, request, *args, **kwargs):
        
         serializer = BoardSerializer(data=request.data, context={'request': request})
@@ -16,10 +17,10 @@ class BoardAPIView(views.APIView):
         
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    """ DELETE 요청: 게시글 삭제 """ 
+    """ DELETE 요청: 게시글 삭제 -board_id- """ 
     def delete(self, request, *args, **kwargs):
        
-        board_id = request.query_params.get('board_id')
+        board_id = request.data.get('board_id')
 
         # board_id가 없으면 400 오류 반환
         if not board_id:
@@ -36,7 +37,7 @@ class BoardAPIView(views.APIView):
                 {"success": False, "message": "Post not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
-
+    
         # 게시글 삭제 권한 확인
         if request.user.is_superuser or request.user.is_staff or board.author == request.user:
             board.delete()  # 권한이 있으면 게시글 삭제
@@ -51,22 +52,34 @@ class BoardAPIView(views.APIView):
             status=status.HTTP_403_FORBIDDEN
         )
         
-    """ GET 요청: 게시글 목록 가져오기 """
+    """ GET 요청: 게시글 목록 가져오기 -email_id- """
     def get(self, request, *args, **kwargs):
         
-        user_id = request.query_params.get('user_id', None)
-        
-        # 관리자일 경우, 모든 게시글을 가져올 수 있음
+        email = request.data.get('email', None)
+  
         if request.user.is_staff:
-            boards = Board.objects.filter(user_id=user_id) if user_id else Board.objects.all()
-        else:
-            # 일반 사용자는 본인 게시글만 볼 수 있음
-            boards = Board.objects.filter(user=request.user)
-            if user_id and user_id != str(request.user.id):
+            if email:
+                try:
+                    # 이메일로 사용자 조회
+                    user = User.objects.get(email=email)
+                    # 해당 사용자가 작성한 게시글만 필터링
+                    boards = Board.objects.filter(author=user)
+                    
+                except User.DoesNotExist:
+                    return response.Response(
+                        {"success": False, "message": "User with this email does not exist."},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            else:
+               boards = Board.objects.filter(author_id=request.user.id)
+        else:    
+            # 일반 사용자는 본인만 조회
+            if email and email != str(request.user.email):
                 return response.Response(
                     {"success": False, "message": "You are not authorized to view this user's posts."},
                     status=status.HTTP_403_FORBIDDEN
                 )
+            boards = Board.objects.filter(author_id=request.user.id)
 
         # 게시글이 없으면 오류 응답 반환
         if not boards.exists():

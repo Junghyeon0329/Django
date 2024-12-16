@@ -66,7 +66,7 @@ class WorkforceAPIView(views.APIView):
     """ 인사 인원 정보 요청 API"""
     def get(self, request, *args, **kwargs):
         # 쿼리 파라미터에서 email_id 가져오기
-        email_id = request.query_params.get('email_id')
+        email_id = request.data.get('email_id')
 
         # URL 설정
         try:

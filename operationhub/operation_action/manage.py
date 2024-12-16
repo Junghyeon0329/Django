@@ -17,7 +17,7 @@ class UserAPIView(views.APIView):
 			permission_classes.append(permissions.IsAuthenticated())
 		return permission_classes    
 
-	""" 새로운 사용자 생성 API """
+	""" 새로운 사용자 생성 API -email, password- """
 	def post(self, request, *args, **kwargs):
 		
 		# 사용자에게 필요한 나머지 정보
@@ -70,7 +70,7 @@ class UserAPIView(views.APIView):
 					status.HTTP_500_INTERNAL_SERVER_ERROR
 				)
 			
-	""" 회원 탈퇴 API (자신의 계정만 삭제 가능) """
+	""" 회원 탈퇴 API (자신의 계정만 삭제 가능) -token- """
 	def delete(self, request, *args, **kwargs):
 		user = request.user  # 현재 로그인된 사용자
 		username_to_delete = request.data.get('username', None)  # 관리자가 삭제하려는 사용자 이름
@@ -114,7 +114,7 @@ class UserAPIView(views.APIView):
 					status=status.HTTP_500_INTERNAL_SERVER_ERROR
 				)
 	
-	""" 비밀번호 변경 API (자신의 계정만 변경 가능) """
+	""" 비밀번호 변경 API (자신의 계정만 변경 가능) -email, current_password, new_password- """
 	def put(self, request, *args, **kwargs):
 				
 		email = request.data.get('email')
@@ -156,55 +156,55 @@ class UserAPIView(views.APIView):
 				 
 class LoginAPIView(views.APIView):
 
-    """ 사용자 로그인 및 JWT 토큰 발급 """
-    def post(self, request):
-    
-        email = request.data.get('email')
-        password = request.data.get('password')
+	""" 사용자 로그인 및 JWT 토큰 발급 -email, password- """
+	def post(self, request):
+	
+		email = request.data.get('email')
+		password = request.data.get('password')
 
-        # 필수 필드 체크
-        if not email or not password:
-            return response.Response(
-                {"success": False, "message": "email and password are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+		# 필수 필드 체크
+		if not email or not password:
+			return response.Response(
+				{"success": False, "message": "email and password are required."},
+				status=status.HTTP_400_BAD_REQUEST
+			)
 
-        # 이메일로 사용자 검색
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return response.Response(
-                {"success": False, "message": "No user found with this email."},
-                status=status.HTTP_404_NOT_FOUND  # 사용자 없음 상태 코드
-            )
+		# 이메일로 사용자 검색
+		try:
+			user = User.objects.get(email=email)
+		except User.DoesNotExist:
+			return response.Response(
+				{"success": False, "message": "No user found with this email."},
+				status=status.HTTP_404_NOT_FOUND  # 사용자 없음 상태 코드
+			)
 
-        # 사용자 인증 (비밀번호 체크)
-        if not user.check_password(password):
-            return response.Response(
-                {"success": False, "message": "Incorrect password."},
-                status=status.HTTP_401_UNAUTHORIZED  # 비밀번호 불일치 상태 코드
-            )
+		# 사용자 인증 (비밀번호 체크)
+		if not user.check_password(password):
+			return response.Response(
+				{"success": False, "message": "Incorrect password."},
+				status=status.HTTP_401_UNAUTHORIZED  # 비밀번호 불일치 상태 코드
+			)
 
-        # 비활성화된 사용자 체크
-        if not user.is_active:
-            return response.Response(
-                {"success": False, "message": "This account is disabled."},
-                status=status.HTTP_403_FORBIDDEN  # 비활성화된 계정 상태 코드
-            )
-    
-        # 로그인 처리
-        login(request, user)
+		# 비활성화된 사용자 체크
+		if not user.is_active:
+			return response.Response(
+				{"success": False, "message": "This account is disabled."},
+				status=status.HTTP_403_FORBIDDEN  # 비활성화된 계정 상태 코드
+			)
+	
+		# 로그인 처리
+		login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-        # JWT 토큰 생성
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
+		# JWT 토큰 생성
+		refresh = RefreshToken.for_user(user)
+		access_token = str(refresh.access_token)
 
-        return response.Response(
-            {
-                "success": True,
-                "access": access_token,
-                "refresh": str(refresh),
-                "message": "Login successful."
-            },
-            status=status.HTTP_200_OK
-        )
+		return response.Response(
+			{
+				"success": True,
+				"access": access_token,
+				"refresh": str(refresh),
+				"message": "Login successful."
+			},
+			status=status.HTTP_200_OK
+		)
