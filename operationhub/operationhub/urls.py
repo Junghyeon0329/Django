@@ -4,7 +4,7 @@ from rest_framework_simplejwt import views as jwt_views
 
 from operation_action.manage import UserAPIView, LoginAPIView
 from operation_action.board import BoardAPIView
-from operation_action.workforce import WorkforceAPIView
+from operation_action.workforce_API import WorkforceAPIView
 
 
 ''' 관리자를 추가하는 방법 : python manage.py createsuperuser '''
@@ -16,7 +16,6 @@ urlpatterns = [
     path('login/', LoginAPIView.as_view(), name='login-api'),
     path('user/', UserAPIView.as_view(), name='user-api'),    
     path('board/', BoardAPIView.as_view(), name='board-api'),    
-    
-    # path('users/', WorkforceAPIView.as_view(), name='user-api'),
+    path('workforce/', WorkforceAPIView.as_view(), name='worker-api'),
 ]
     

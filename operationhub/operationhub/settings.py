@@ -50,6 +50,11 @@ REST_FRAMEWORK = {
     ),
 }
 
+AUTHENTICATION_BACKENDS = (
+    'operation_action.authentication.EmailBackend',  # 커스텀 백엔드 추가
+    'django.contrib.auth.backends.ModelBackend',  # 기본 백엔드도 추가
+)
+
 # JWT 설정
 from datetime import timedelta
 
