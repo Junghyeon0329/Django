@@ -28,17 +28,17 @@ class User(models.Model):
     permission = models.TextField(default=False)
     approval_date = models.DateField(null=True, blank=True)
 
-    @classmethod
-    def create_user(cls, username, email_id, phone_number, emergency_contact_phone, **extra_fields):
-        user = cls(
-            username=username,
-            email_id=email_id,
-            phone_number=phone_number,
-            emergency_contact_phone=emergency_contact_phone,
-            **extra_fields
-        )
-        user.save()
-        return user
+    # @classmethod
+    # def create_user(cls, username, email_id, phone_number, emergency_contact_phone, **extra_fields):
+    #     user = cls(
+    #         username=username,
+    #         email_id=email_id,
+    #         phone_number=phone_number,
+    #         emergency_contact_phone=emergency_contact_phone,
+    #         **extra_fields
+    #     )
+    #     user.save()
+    #     return user
 
     class Meta:
         db_table = "user_info"

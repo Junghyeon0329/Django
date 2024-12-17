@@ -6,6 +6,7 @@ from django.contrib.auth import login
 
 from datetime import datetime
 import time
+from .authentication import OneSecondThrottle
 
 class UserAPIView(views.APIView):
 	
@@ -17,7 +18,13 @@ class UserAPIView(views.APIView):
 			permission_classes.append(permissions.IsAuthenticated())
 		return permission_classes    
 
-	""" 새로운 사용자 생성 API -email, password- """
+	def get_throttles(self):
+		throttles = super().get_throttles()
+		if self.request.method == 'POST':  # POST 요청에 대해서만 1초 제한을 적용
+			throttles.append(OneSecondThrottle())
+		return throttles  
+
+	""" 새로운 사용자 생성 API """
 	def post(self, request, *args, **kwargs):
 		
 		# 사용자에게 필요한 나머지 정보
@@ -70,7 +77,7 @@ class UserAPIView(views.APIView):
 					status.HTTP_500_INTERNAL_SERVER_ERROR
 				)
 			
-	""" 회원 탈퇴 API (자신의 계정만 삭제 가능) -token- """
+	""" 회원 탈퇴 API (자신의 계정만 삭제 가능) """
 	def delete(self, request, *args, **kwargs):
 		user = request.user  # 현재 로그인된 사용자
 		username_to_delete = request.data.get('username', None)  # 관리자가 삭제하려는 사용자 이름
@@ -114,7 +121,7 @@ class UserAPIView(views.APIView):
 					status=status.HTTP_500_INTERNAL_SERVER_ERROR
 				)
 	
-	""" 비밀번호 변경 API (자신의 계정만 변경 가능) -email, current_password, new_password- """
+	""" 비밀번호 변경 API (자신의 계정만 변경 가능) """
 	def put(self, request, *args, **kwargs):
 				
 		email = request.data.get('email')
@@ -156,7 +163,7 @@ class UserAPIView(views.APIView):
 				 
 class LoginAPIView(views.APIView):
 
-	""" 사용자 로그인 및 JWT 토큰 발급 -email, password- """
+	""" 사용자 로그인 및 JWT 토큰 발급 """
 	def post(self, request):
 	
 		email = request.data.get('email')

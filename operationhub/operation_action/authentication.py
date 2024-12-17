@@ -1,5 +1,6 @@
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth.models import User
+from rest_framework import throttling 
 
 class EmailBackend(BaseBackend):
     def authenticate(self, request, email=None, password=None):
@@ -9,3 +10,6 @@ class EmailBackend(BaseBackend):
                 return user
         except User.DoesNotExist:
             return None
+
+class OneSecondThrottle(throttling.UserRateThrottle): 
+    rate = '1/second'
