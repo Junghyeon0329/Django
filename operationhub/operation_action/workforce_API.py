@@ -59,7 +59,8 @@ class WorkforceAPIView(views.APIView):
 
 			# POST 요청 전송
 			res = requests.post(url, json=user_data)
-
+			# print("message:", res.json()['message'])
+   
 			# HTTP 상태 코드가 4xx, 5xx인 경우 예외 발생
 			res.raise_for_status()
 			

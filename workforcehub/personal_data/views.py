@@ -3,7 +3,7 @@ from personal_data.models import User
 from django.db.models.fields import NOT_PROVIDED
 
 # 허용된 API 키 목록
-ALLOWED_API_KEYS = ['165.132.105.29']
+ALLOWED_API_KEYS = ['127.0.0.1']
 
 class OneSecondThrottle(throttling.UserRateThrottle): rate = '1/second'	
 
@@ -42,9 +42,6 @@ class UserViewSet(viewsets.ModelViewSet):
 		if error_response: 
 			return error_response 
 
-		print("(1)")
-		print(User._meta.get_fields())
-  
 		# 필수 필드 확인
 		required_fields = [field.name for field in User._meta.get_fields() if not field.blank and (field.default == NOT_PROVIDED)]
 		

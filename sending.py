@@ -284,9 +284,11 @@ def main():
 		print("4. 비밀번호변경")        
 		print("5. 게시판")
 		print("6. Exit")
+		print()
+		print("---관리자 기능---")
 		print("7. 인사등록")
 		print("8. 인사검색")
-		
+		print()
 
 		choice = input("Enter your choice (1/2/3/4/5/6/7/8): ")
 

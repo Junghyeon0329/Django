@@ -1,4 +1,4 @@
-from rest_framework import status, response, views, permissions, throttling 
+from rest_framework import status, response, views, permissions
 from .models import Board
 from .serializers import BoardSerializer
 from django.contrib.auth.models import User

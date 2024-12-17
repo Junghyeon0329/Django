@@ -1,6 +1,6 @@
 # board/serializers.py
 from rest_framework import serializers
-from .models import Board
+from .models import Board, UserProfile
 
 class BoardSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,3 +10,8 @@ class BoardSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['author'] = self.context['request'].user
         return super().create(validated_data)
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['username', 'profile_picture']

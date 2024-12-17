@@ -65,6 +65,11 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,  # 토큰 회전 후 블랙리스트 여부
 }
 
+import os
+
+MEDIA_URL = '/media/'  # 파일 URL 경로
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 파일이 저장될 경로
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -75,7 +80,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# ROOT_URLCONF = 'workforcehub.urls'
 ROOT_URLCONF = 'operationhub.urls'
 
 TEMPLATES = [
