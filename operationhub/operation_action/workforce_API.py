@@ -77,7 +77,6 @@ class WorkforceAPIView(views.APIView):
     def get(self, request, *args, **kwargs):
         # 쿼리 파라미터에서 email 가져오기
         email = request.query_params.get('email', None)
-        
         # URL 설정
         try:
             from URLaddress import workforceURL
@@ -88,7 +87,6 @@ class WorkforceAPIView(views.APIView):
                 res = requests.get(url, params={'email': email})
             else:
                 res = requests.get(url)
-
             # HTTP 상태 코드가 4xx, 5xx인 경우 예외 발생
             res.raise_for_status()
 
@@ -110,7 +108,7 @@ class WorkforceAPIView(views.APIView):
             return response.Response(
                     {"success": False, "message": f"Error: {str(http_err)}."},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            )          
           
         except RequestException as e:
             return response.Response(

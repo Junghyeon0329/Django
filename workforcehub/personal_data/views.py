@@ -3,7 +3,7 @@ from personal_data.models import User
 from django.db.models.fields import NOT_PROVIDED
 
 # 허용된 API 키 목록
-ALLOWED_API_KEYS = ['127.0.0.1']
+ALLOWED_API_KEYS = ['165.132.105.29']
 
 # 사용자 직렬화 클래스
 class UserSerializer(serializers.ModelSerializer):
@@ -29,9 +29,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         data = request.data
 
-        # API 요청 검증
         error_response = self.check_and_validate_api(request)
-        if error_response: return error_response
+        if error_response: 
+            return error_response 
 
         # 필수 필드 확인
         required_fields = [field.name for field in User._meta.get_fields() if not field.blank and (field.default == NOT_PROVIDED)]
@@ -75,10 +75,10 @@ class UserViewSet(viewsets.ModelViewSet):
 			)
 
     def list(self, request, *args, **kwargs):
-        # API 요청 검증
+
         error_response = self.check_and_validate_api(request)
-        if error_response:
-            return error_response
+        if error_response: 
+            return error_response 
 
         email_id = request.query_params.get('email', None)
         queryset = self.get_queryset()
@@ -97,12 +97,12 @@ class UserViewSet(viewsets.ModelViewSet):
         return response.Response({"success": True, "data": serializer.data})
 
     def update(self, request, *args, **kwargs):
-        data = request.data
-
-        # API 요청 검증
+        
         error_response = self.check_and_validate_api(request)
-        if error_response:
-            return error_response
+        if error_response: 
+            return error_response         
+        
+        data = request.data
 
         user_id = kwargs.get('pk')
         try:
