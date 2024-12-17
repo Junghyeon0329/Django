@@ -75,29 +75,29 @@ class WorkforceAPIView(views.APIView):
 
     """ 인사 인원 정보 요청 API"""
     def get(self, request, *args, **kwargs):
-        # 쿼리 파라미터에서 email_id 가져오기
-        email_id = request.query_params.get('email_id')
-
+        # 쿼리 파라미터에서 email 가져오기
+        email = request.query_params.get('email', None)
+        
         # URL 설정
         try:
             from URLaddress import workforceURL
             url = f"http://{workforceURL['ip']}:{workforceURL['port']}/users/"
 
             # GET 요청 전송
-            if email_id:
-                response = requests.get(url, params={'email_id': email_id})
+            if email:
+                res = requests.get(url, params={'email': email})
             else:
-                response = requests.get(url)
+                res = requests.get(url)
 
             # HTTP 상태 코드가 4xx, 5xx인 경우 예외 발생
-            response.raise_for_status()
+            res.raise_for_status()
 
             # 데이터 처리
-            user_info = response.json().get("data", {})
+            user_info = res.json().get("data", {})
 
             if user_info:
                 return response.Response(
-                   {"success": True, "message": user_info},
+                   {"success": True, "data": user_info},
                     status=status.HTTP_200_OK
                 )
             else:                

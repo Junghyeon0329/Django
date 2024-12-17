@@ -80,8 +80,11 @@ class UserViewSet(viewsets.ModelViewSet):
         if error_response:
             return error_response
 
-        email_id = request.query_params.get('email_id', None)
+        email_id = request.query_params.get('email', None)
         queryset = self.get_queryset()
+        
+        queryset = queryset.filter(permission=True)
+                
         if email_id:
             queryset = queryset.filter(email_id=email_id)
             if len(queryset) != 1:

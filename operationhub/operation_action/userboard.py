@@ -61,8 +61,7 @@ class BoardAPIView(views.APIView):
     """ GET 요청: 게시글 목록 가져오기 -email_id- """
     def get(self, request, *args, **kwargs):
         
-        email = request.data.get('email', None)
-  
+        email = request.query_params.get('email', None)
         if request.user.is_staff:
             if email:
                 try:

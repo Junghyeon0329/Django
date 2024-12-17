@@ -7,23 +7,35 @@ access_token = None
 # ========================
 # Helper functions
 # ========================
+
+"""API 요청을 보내는 함수"""
 def send_api_request(method, url, headers, body=None, params=None):
-	"""API 요청을 보내는 함수"""
-	try:
-		response = requests.request(method, url, headers=headers, json=body, params=params)
+    try:
+        # 요청 보내기
+        response = requests.request(method, url, headers=headers, json=body, params=params)
         
-		# 응답 상태 코드가 200 또는 201일 때는 정상 응답으로 처리
-		if response.status_code in [200, 201]:
-			print(f"{method} Request was successful")
-			return response.json()  # 응답을 JSON 형식으로 반환
-		else:
-			# 400 이상인 경우에는 에러 처리
-			print(f"Error {response.status_code}: {response.text}")
-			return None
-	except requests.exceptions.RequestException as e:
-		print(f"An error occurred: {e}")
-		return None
-	
+        # 상태 코드에 따른 응답 처리
+        if response.status_code in [200, 201]:  # 성공적인 응답
+            print(f"{method} request was successful. Status Code: {response.status_code}")
+            try:
+                return response.json() # 응답이 JSON 형식이면 반환
+            except ValueError:
+                return response.text # JSON이 아닌 경우 (예: HTML 또는 텍스트 응답)
+        elif response.status_code in [400, 401, 403, 404]:  # 클라이언트 오류
+            print(f"Client Error {response.status_code}: {response.text}")
+            return None
+        elif response.status_code in [500, 502, 503, 504]:  # 서버 오류
+            print(f"Server Error {response.status_code}: {response.text}")
+            return None
+        else:
+            # 그 외의 상태 코드 처리
+            print(f"Unexpected Status Code {response.status_code}: {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        # 요청 중 예외가 발생한 경우
+        print(f"An error occurred: {e}")
+        return None
+    
 # ========================
 # Authentication functions
 # ========================
@@ -62,8 +74,9 @@ def create_user():
 	}
 	print()
 	response = send_api_request("POST", url, headers=None, body=body)
-	print("Created user: ", response)
-	
+	if not response :
+		print("Failed to create user")
+ 
 """비밀번호를 초기화하는 함수"""
 def reset_password():
    
@@ -83,7 +96,8 @@ def reset_password():
 	}
 	print()
 	response = send_api_request("PUT", url, headers=headers, body=body)
-	print("Password reset: ", response)
+	if not response :
+		print("Failed to change password")
 	
 """유저 회원탈퇴 함수"""
 def withdrawal():
@@ -101,7 +115,6 @@ def withdrawal():
 	response = send_api_request("DELETE", url, headers=headers)
 	if response:
 		print("User deleted successfully.")
-		# 탈퇴 후 유저 메뉴로 돌아가기
 		access_token = None
 		main()
 	else:
@@ -129,8 +142,11 @@ def create_board():
 	}
 	print()
 	response = send_api_request("POST", url, headers=headers, body=body)
-	print("Post board: ", response)
-
+	if response:
+		print("Create board successfully")
+	else:
+		print("Failed Create board")
+  
 """게시판 검색"""
 def search_board():
 
@@ -145,16 +161,19 @@ def search_board():
 	}
 
 	# user_id를 입력받을 때, 입력이 없으면 None으로 처리
-	user_id = input("User ID (optional, press Enter to skip): ").strip()
+	email = input("email optional, press Enter to skip): ").strip()
 
 	# user_id가 입력되었을 경우에만 params에 추가
 	params = {}
-	if user_id:
-		params["user_id"] = user_id
+	if email:
+		params["email"] = email
 
 	# API 요청 보내기
 	response = send_api_request("GET", url, headers=headers, params=params)
-	print("Board content: ", response)
+	if response:
+		print(response['data'])
+	else:
+		print("Failed search board")
 
 """게시판 삭제"""
 def delete_board():
@@ -200,8 +219,31 @@ def enroll_human():
 		"email": input("Enter email: "),
 	}
 	
-	send_api_request("POST", url, headers=headers, body=body)
+	response = send_api_request("POST", url, headers=headers, body=body)
 
+"""인사 정보"""
+def search_human():
+
+	if not access_token:
+		print("Access token is required. Please get the token first.")
+		return
+
+	url = f"{BASE_URL}/workforce/"
+	headers = {
+		"Authorization": f"Bearer {access_token}",
+		"Content-Type": "application/json"
+	}
+
+	params = {
+		"email": input("Enter email: "),
+	}
+	
+	response = send_api_request("GET", url, headers=headers, params=params)
+	if response:
+		print(response['data'])
+	else:
+		print("Failed search human resource")
+  
 # ========================
 # Main function (Menu)
 # ========================
@@ -243,9 +285,10 @@ def main():
 		print("5. 게시판")
 		print("6. Exit")
 		print("7. 인사등록")
+		print("8. 인사검색")
 		
 
-		choice = input("Enter your choice (1/2/3/4/5/6/7): ")
+		choice = input("Enter your choice (1/2/3/4/5/6/7/8): ")
 
 		if choice == '1':
 			access_token = login_user()  # 로그인 시 토큰 받기
@@ -275,7 +318,12 @@ def main():
 			if access_token: enroll_human()  
 			else:
 				print("Please get an Access Token first (Option 1).")
-				
+    
+		elif choice == '8':
+			if access_token: search_human()  
+			else:
+				print("Please get an Access Token first (Option 1).")
+						
 		else:
 			print("Invalid choice. Please try again.")
 
