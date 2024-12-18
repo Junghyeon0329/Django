@@ -22,6 +22,3 @@ urlpatterns = [
     path('workforce/', WorkforceAPIView.as_view(), name='worker-api'),    
     path('upload/', UserProfileUploadView.as_view(), name='upload-profile'),
 ]
-    
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

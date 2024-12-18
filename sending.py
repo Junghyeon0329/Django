@@ -9,33 +9,36 @@ access_token = None
 # ========================
 
 """API 요청을 보내는 함수"""
-def send_api_request(method, url, headers, body=None, params=None):
-    try:
-        # 요청 보내기
-        response = requests.request(method, url, headers=headers, json=body, params=params)
-        
-        # 상태 코드에 따른 응답 처리
-        if response.status_code in [200, 201]:  # 성공적인 응답
-            print(f"{method} request was successful. Status Code: {response.status_code}")
-            try:
-                return response.json() # 응답이 JSON 형식이면 반환
-            except ValueError:
-                return response.text # JSON이 아닌 경우 (예: HTML 또는 텍스트 응답)
-        elif response.status_code in [400, 401, 403, 404]:  # 클라이언트 오류
-            print(f"Client Error {response.status_code}: {response.text}")
-            return None
-        elif response.status_code in [500, 502, 503, 504]:  # 서버 오류
-            print(f"Server Error {response.status_code}: {response.text}")
-            return None
-        else:
-            # 그 외의 상태 코드 처리
-            print(f"Unexpected Status Code {response.status_code}: {response.text}")
-            return None
-    except requests.exceptions.RequestException as e:
-        # 요청 중 예외가 발생한 경우
-        print(f"An error occurred: {e}")
-        return None
-    
+def send_api_request(method, url, headers, body=None, params=None, files=None):
+	try:
+		# 파일이 있을 경우, multipart/form-data로 요청을 보냄
+		if files:
+			response = requests.request(method, url, headers=headers, data=body, params=params, files=files)
+		else:
+			response = requests.request(method, url, headers=headers, json=body, params=params)
+		
+		# 상태 코드에 따른 응답 처리
+		if response.status_code in [200, 201]:
+			print(f"{method} request was successful. Status Code: {response.status_code}")
+			try:
+				return response.json()  # JSON 형식으로 응답을 처리
+			except ValueError:
+				return response.text  # JSON이 아닌 응답 처리
+		elif response.status_code in [400, 401, 403, 404]:
+			print(f"Client Error {response.status_code}: {response.text}")
+			return None
+		elif response.status_code in [500, 502, 503, 504]:
+			print(f"Server Error {response.status_code}: {response.text}")
+			return None
+		else:
+			print(f"Unexpected Status Code {response.status_code}: {response.text}")
+			return None
+	except requests.exceptions.RequestException as e:
+		print(f"An error occurred: {e}")
+		return None
+
+
+
 # ========================
 # Authentication functions
 # ========================
@@ -243,7 +246,34 @@ def search_human():
 		print(response['data'])
 	else:
 		print("Failed search human resource")
-  
+
+def upload_profile_picture():
+
+	url = f"{BASE_URL}/upload/"  # 실제 API URL에 맞게 수정
+	# headers = {
+	#     "Authorization": f"Bearer {access_token}",
+	#     "Content-Type": "application/json"
+	# }
+	headers = None
+
+	# file_path = input("Enter the path to the profile picture: ")
+	file_path = 'C:/Users/Choi/Desktop/profile_test.png'
+	body = {
+		'username': 'testtest',  # 예시로 추가한 다른 데이터 (필요에 따라 수정)
+		'description': 'Profile picture upload'  # 다른 데이터 예시
+	}
+	
+	try:
+		with open(file_path, 'rb') as f:
+			files = {'profile_picture': f}
+			response = send_api_request("POST", url, headers=headers, files=files, body=body)
+			if response:
+				print("Profile picture uploaded successfully")
+			else:
+				print("Failed to upload profile picture")
+	except FileNotFoundError:
+		print("File not found. Please check the file path.")
+
 # ========================
 # Main function (Menu)
 # ========================
@@ -288,6 +318,7 @@ def main():
 		print("---관리자 기능---")
 		print("7. 인사등록")
 		print("8. 인사검색")
+		print("9. 개인 프로필 파일 업로드")
 		print()
 
 		choice = input("Enter your choice (1/2/3/4/5/6/7/8): ")
@@ -320,12 +351,15 @@ def main():
 			if access_token: enroll_human()  
 			else:
 				print("Please get an Access Token first (Option 1).")
-    
+	
 		elif choice == '8':
 			if access_token: search_human()  
 			else:
 				print("Please get an Access Token first (Option 1).")
-						
+	
+		elif choice == '9':
+			upload_profile_picture()  
+   
 		else:
 			print("Invalid choice. Please try again.")
 
