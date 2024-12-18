@@ -106,3 +106,4 @@ class BoardAPIView(views.APIView):
 			{"success": True, "data": serializer.data},  # 응답 구조화
 			status=status.HTTP_200_OK
 		)
+  

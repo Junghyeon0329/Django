@@ -1,6 +1,10 @@
 
 from rest_framework import status, views, response
 from .serializers import UserProfileSerializer
+"""
+    start nginx.exe
+    nginx -s stop
+"""
 
 class UserProfileUploadView(views.APIView):
 
