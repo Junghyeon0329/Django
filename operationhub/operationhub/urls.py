@@ -10,6 +10,9 @@ from operation_action.workforce_API import WorkforceAPIView
 from django.conf import settings
 from django.conf.urls.static import static
 
+from operation_action.views import chatgpt_response
+
+
 ''' 관리자를 추가하는 방법 : python manage.py createsuperuser '''
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -21,4 +24,5 @@ urlpatterns = [
     path('board/', BoardAPIView.as_view(), name='board-api'),    
     path('workforce/', WorkforceAPIView.as_view(), name='worker-api'),    
     path('upload/', UserProfileUploadView.as_view(), name='upload-profile'),
+    path('chat/', chatgpt_response, name='chatgpt_response'),
 ]
