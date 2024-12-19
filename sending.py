@@ -274,6 +274,18 @@ def upload_profile_picture():
 	except FileNotFoundError:
 		print("File not found. Please check the file path.")
 
+def communication_chatgpt():
+	while True:
+		url = f"{BASE_URL}/chat/"  # 실제 API URL에 맞게 수정
+
+		body = {
+			"message": input("message: "),
+		}
+
+		response = send_api_request("POST", url, headers=None, body=body)
+		print(response)
+
+
 # ========================
 # Main function (Menu)
 # ========================
@@ -319,6 +331,7 @@ def main():
 		print("7. 인사등록")
 		print("8. 인사검색")
 		print("9. 개인 프로필 파일 업로드")
+		print("10. chatgpt-2 대화")
 		print()
 
 		choice = input("Enter your choice (1/2/3/4/5/6/7/8): ")
@@ -359,6 +372,9 @@ def main():
 	
 		elif choice == '9':
 			upload_profile_picture()  
+   
+		elif choice == '10':
+			communication_chatgpt()  
    
 		else:
 			print("Invalid choice. Please try again.")
