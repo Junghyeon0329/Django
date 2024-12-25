@@ -17,8 +17,7 @@ from operation_action.views import chatgpt_response
 urlpatterns = [
     # path('admin/', admin.site.urls),
     # path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    # path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
-    
+    path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('login/', LoginAPIView.as_view(), name='login-api'),
     path('user/', UserAPIView.as_view(), name='user-api'),    
     path('board/', BoardAPIView.as_view(), name='board-api'),    
