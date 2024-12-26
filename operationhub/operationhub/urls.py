@@ -6,9 +6,7 @@ from operation_action.usermanage import UserAPIView, LoginAPIView
 from operation_action.userboard import BoardAPIView
 from operation_action.userfiles import UserProfileUploadView
 from operation_action.workforce_API import WorkforceAPIView
-
-from django.conf import settings
-from django.conf.urls.static import static
+from operation_action.passwordreset import PasswordResetConfirmView
 
 from operation_action.views import chatgpt_response
 
@@ -24,4 +22,6 @@ urlpatterns = [
     path('workforce/', WorkforceAPIView.as_view(), name='worker-api'),    
     path('upload/', UserProfileUploadView.as_view(), name='upload-profile'),
     path('chat/', chatgpt_response, name='chatgpt_response'),
+    path('reset-password/<uid>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]
+

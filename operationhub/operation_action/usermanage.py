@@ -7,6 +7,13 @@ from django.contrib.auth import login
 from datetime import datetime
 import time
 from .authentication import OneSecondThrottle
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes
+import operationhub.settings as setting
 
 class UserAPIView(views.APIView):
 	
@@ -215,3 +222,54 @@ class LoginAPIView(views.APIView):
 			},
 			status=status.HTTP_200_OK
 		)
+  
+  
+	""" 비밀번호 초기화 API """
+	def put(self, request, *args, **kwargs):
+		email = request.data.get('email')
+
+		if not email:
+			return response.Response(
+				{"success": False, "message": "Missing required fields."},
+				status=status.HTTP_400_BAD_REQUEST
+			)
+
+		try:
+			# 사용자 객체 가져오기
+			user = User.objects.get(email=email)
+
+			# 비밀번호 초기화 토큰 생성
+			token = default_token_generator.make_token(user)
+
+			# URL 안전하게 인코딩
+			uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+			# 이메일 내용 준비
+			domain = get_current_site(request).domain
+			# from URLaddress import front
+			# domain = front['ip'] + ':' + front['port']
+			reset_url = f"http://{domain}/reset-password/{uid}/{token}/"
+			
+			# 이메일 템플릿 렌더링
+			email_subject = "비밀번호 초기화 요청"
+			email_message = render_to_string('password_reset_email.html', {
+				'user': user,
+				'reset_url': reset_url,
+			})
+
+			try: 
+				send_mail(email_subject, email_message, setting.EMAIL_HOST_USER, [email], fail_silently=False,)
+			except:
+				print(f"Google 보안 정책으로 2022년부터 사용 불가: {reset_url}")
+				pass
+
+			return response.Response(
+				{"success": True, "message": "Password reset email sent."},
+				status=status.HTTP_200_OK
+			)
+
+		except User.DoesNotExist:
+			return response.Response(
+				{"success": False, "message": "User not found."},
+				status=status.HTTP_404_NOT_FOUND
+			)
