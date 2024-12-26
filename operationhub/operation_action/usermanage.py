@@ -245,9 +245,9 @@ class LoginAPIView(views.APIView):
 			uid = urlsafe_base64_encode(force_bytes(user.pk))
 
 			# 이메일 내용 준비
-			domain = get_current_site(request).domain
-			# from URLaddress import front
-			# domain = front['ip'] + ':' + front['port']
+			# domain = get_current_site(request).domain
+			from URLaddress import front
+			domain = front['ip'] + ':' + front['port']
 			reset_url = f"http://{domain}/reset-password/{uid}/{token}/"
 			
 			# 이메일 템플릿 렌더링

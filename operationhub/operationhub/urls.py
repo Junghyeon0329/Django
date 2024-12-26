@@ -22,6 +22,6 @@ urlpatterns = [
     path('workforce/', WorkforceAPIView.as_view(), name='worker-api'),    
     path('upload/', UserProfileUploadView.as_view(), name='upload-profile'),
     path('chat/', chatgpt_response, name='chatgpt_response'),
-    path('reset-password/<uid>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password-reset/<uid>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]
 

@@ -61,7 +61,7 @@ AUTHENTICATION_BACKENDS = (
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # 토큰 유효 기간 (15분)
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # 토큰 유효 기간 (15분)
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # 리프레시 토큰 유효 기간 (1일)
     'ROTATE_REFRESH_TOKENS': False,  # 리프레시 토큰 회전 여부
     'BLACKLIST_AFTER_ROTATION': False,  # 토큰 회전 후 블랙리스트 여부
