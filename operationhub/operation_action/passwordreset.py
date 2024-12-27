@@ -7,33 +7,6 @@ from rest_framework import response, status
 from django.utils.encoding import force_bytes, force_str
 
 class PasswordResetConfirmView(APIView):
-   
-    # 비밀번호 초기화 링크를 확인하는 GET 메소드
-    def get(self, request, *args, **kwargs):
-        uid = kwargs.get('uid')
-        token = kwargs.get('token')
-
-        try:
-            # uid와 token을 통해 사용자 정보와 유효성 검사
-            user_id = force_str(urlsafe_base64_decode(uid))
-            user = User.objects.get(pk=user_id)
-
-            # 토큰 확인
-            if default_token_generator.check_token(user, token):
-                return response.Response(
-                    {"success": True, "message": "Token is valid."},
-                    status=status.HTTP_200_OK
-                )
-            else:
-                return response.Response(
-                    {"success": False, "message": "Invalid or expired token."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        except User.DoesNotExist:
-            return response.Response(
-                {"success": False, "message": "User not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
             
     def put(self, request, *args, **kwargs):
         # URL에서 uid와 token 추출
