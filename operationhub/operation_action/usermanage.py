@@ -214,14 +214,18 @@ class LoginAPIView(views.APIView):
 		access_token = str(refresh.access_token)
 
 		return response.Response(
-			{
-				"success": True,
-				"access": access_token,
-				"refresh": str(refresh),
-				"message": "Login successful."
-			},
-			status=status.HTTP_200_OK
-		)
+            {
+                "success": True,
+                "access": access_token,
+                "refresh": str(refresh),
+                "user":{
+					"username": user.username,
+     				"email": user.email,       
+				},
+                "message": "Login successful."
+            },
+            status=status.HTTP_200_OK
+        )
   
   
 	""" 비밀번호 초기화 API """
