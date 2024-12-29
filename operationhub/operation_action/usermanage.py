@@ -220,7 +220,8 @@ class LoginAPIView(views.APIView):
                 "refresh": str(refresh),
                 "user":{
 					"username": user.username,
-     				"email": user.email,       
+     				"email": user.email,
+					"joinedDate" : user.date_joined,
 				},
                 "message": "Login successful."
             },
