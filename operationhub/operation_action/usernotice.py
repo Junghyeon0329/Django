@@ -19,7 +19,7 @@ class NoticeAPIView(views.APIView):
 		page = request.query_params.get('page', 1)  # 기본 값 1로 설정
 		
 		# 게시글 쿼리셋 가져오기 (필터링이나 정렬을 추가할 수 있음)
-		queryset = Notice.objects.all()  # 여기서는 모든 게시글을 가져옴
+		queryset = Notice.objects.all().order_by('id')
 		
 		# Pagination 적용
 		paginator = self.pagination_class()  # CustomPagination 인스턴스 생성
@@ -27,9 +27,14 @@ class NoticeAPIView(views.APIView):
 		
 		# 직렬화 (serialize) 처리
 		serializer = NoticeSerializer(paginated_data, many=True)
-		
+
+		# 전체 게시글 수를 가져오기
+		total_count = queryset.count()
+
 		# 페이지네이션 정보와 함께 직렬화된 데이터를 반환
-		return paginator.get_paginated_response(serializer.data)
-
-
+		return response.Response({
+			'total_count': total_count,  # 전체 게시글 수
+			'results': serializer.data,   # 직렬화된 게시글 데이터
+			'pagination': paginator.get_paginated_response(serializer.data).data  # 페이지네이션 정보
+		})
   
