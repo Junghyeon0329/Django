@@ -213,6 +213,8 @@ class LoginAPIView(views.APIView):
 		refresh = RefreshToken.for_user(user)
 		access_token = str(refresh.access_token)
 
+		staff_or_superuser = user.is_staff or user.is_superuser
+  
 		return response.Response(
             {
                 "success": True,
@@ -222,6 +224,7 @@ class LoginAPIView(views.APIView):
 					"username": user.username,
      				"email": user.email,
 					"joinedDate" : user.date_joined,
+					"staff": staff_or_superuser
 				},
                 "message": "Login successful."
             },
