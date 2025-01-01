@@ -22,7 +22,7 @@ class UserAPIView(views.APIView):
 			
 		permission_classes = []    
 		if self.request.method in ['DELETE','PUT']:
-			permission_classes.append(permissions.IsAuthenticated())
+			permission_classes.append(permissions.IsAuthenticated)
 		return permission_classes    
 
 	def get_throttles(self):

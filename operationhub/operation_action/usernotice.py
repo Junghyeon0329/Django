@@ -15,16 +15,18 @@ class NoticeAPIView(views.APIView):
 		return throttles    
 
 	def get_permissions(self):
-		
-		permissions = [IsAuthenticated()]
-		if self.request.method in ['POST']:
+		## get으로 했을때 공지사항을 확인할 수 있도록 할건지 의사결정 필요
+		# permissions = [IsAuthenticated]  
+		permissions = []  
+		if self.request.method in ['POST']:			
 			permissions.append(IsAdminUser())
 		return permissions
 		
 	""" GET 요청: 게시글 목록 가져오기 """
 	def get(self, request, *args, **kwargs):
-		page = request.query_params.get('page', 1)  # 기본 값 1로 설정
 		
+		page = request.query_params.get('page', 1)  # 기본 값 1로 설정
+				
 		# 게시글 쿼리셋 가져오기 (필터링이나 정렬을 추가할 수 있음)
 		queryset = Notice.objects.all().order_by('id')
 		

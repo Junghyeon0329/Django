@@ -11,7 +11,7 @@ class WorkforceAPIView(views.APIView):
 
 	def get_permissions(self):
 		
-		permissions = [IsAuthenticated()]
+		permissions = [IsAuthenticated]
 		if self.request.method in ['POST','GET']:
 			permissions.append(IsAdminUser())
 		return permissions
