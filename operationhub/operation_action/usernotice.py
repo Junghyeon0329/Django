@@ -3,7 +3,6 @@ from .models import Notice
 from .serializers import NoticeSerializer
 from .authentication import OneSecondThrottle
 from custom import *
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 class NoticeAPIView(views.APIView):
 	pagination_class = CustomPagination
@@ -15,12 +14,10 @@ class NoticeAPIView(views.APIView):
 		return throttles    
 
 	def get_permissions(self):
-		## get으로 했을때 공지사항을 확인할 수 있도록 할건지 의사결정 필요
-		# permissions = [IsAuthenticated]  
-		permissions = []  
+		permission = []  
 		if self.request.method in ['POST']:			
-			permissions.append(IsAdminUser())
-		return permissions
+			permission.append(permissions.IsAdminUser())
+		return permission
 		
 	""" GET 요청: 게시글 목록 가져오기 """
 	def get(self, request, *args, **kwargs):

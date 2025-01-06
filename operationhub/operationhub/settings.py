@@ -46,11 +46,11 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT 인증 추가
-    ),
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT 인증 추가
+#     ),
+# }
 
 AUTHENTICATION_BACKENDS = (
     'operation_action.authentication.EmailBackend',  # 커스텀 백엔드 추가
