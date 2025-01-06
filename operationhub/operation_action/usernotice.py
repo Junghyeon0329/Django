@@ -24,8 +24,7 @@ class NoticeAPIView(views.APIView):
 		
 		page = request.query_params.get('page', 1)  # 기본 값 1로 설정
 				
-		# 게시글 쿼리셋 가져오기 (필터링이나 정렬을 추가할 수 있음)
-		queryset = Notice.objects.all().order_by('id')
+		queryset = Notice.objects.all().order_by('-created_at')
 		
 		# Pagination 적용
 		paginator = self.pagination_class()  # CustomPagination 인스턴스 생성
