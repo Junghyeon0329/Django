@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import response, status, views, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import login
+from rest_framework.permissions import AllowAny
 
 from datetime import datetime
 import time
@@ -169,7 +170,10 @@ class UserAPIView(views.APIView):
 			)
 				 
 class LoginAPIView(views.APIView):
-
+	
+	authentication_classes = []
+	permission_classes = [AllowAny]
+	
 	""" 사용자 로그인 및 JWT 토큰 발급 """
 	def post(self, request):
 	
@@ -216,20 +220,20 @@ class LoginAPIView(views.APIView):
 		staff_or_superuser = user.is_staff or user.is_superuser
   
 		return response.Response(
-            {
-                "success": True,
-                "access": access_token,
-                "refresh": str(refresh),
-                "user":{
+			{
+				"success": True,
+				"access": access_token,
+				"refresh": str(refresh),
+				"user":{
 					"username": user.username,
-     				"email": user.email,
+	 				"email": user.email,
 					"joinedDate" : user.date_joined,
 					"staff": staff_or_superuser
 				},
-                "message": "Login successful."
-            },
-            status=status.HTTP_200_OK
-        )
+				"message": "Login successful."
+			},
+			status=status.HTTP_200_OK
+		)
   
   
 	""" 비밀번호 초기화 API """

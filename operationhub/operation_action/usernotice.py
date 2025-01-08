@@ -1,4 +1,5 @@
 from rest_framework import status, response, views, permissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Notice
 from .serializers import NoticeSerializer
 from .authentication import OneSecondThrottle
@@ -17,8 +18,15 @@ class NoticeAPIView(views.APIView):
 		permission = []  
 		if self.request.method in ['POST']:			
 			permission.append(permissions.IsAdminUser())
+	
 		return permission
-		
+
+	def get_authenticators(self):
+		if self.request.method == 'GET':
+			return []
+
+		return [JWTAuthentication()]
+
 	""" GET 요청: 게시글 목록 가져오기 """
 	def get(self, request, *args, **kwargs):
 		
