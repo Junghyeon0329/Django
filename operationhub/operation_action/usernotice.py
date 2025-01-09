@@ -67,3 +67,38 @@ class NoticeAPIView(views.APIView):
 				{"success": False, "message": "Board is not valid"},
 				status=status.HTTP_400_BAD_REQUEST
 			)
+  
+	def delete(self, request, *args, **kwargs):
+	   
+		board_id = request.data.get('board_id', None)
+
+		# board_id가 없으면 400 오류 반환
+		if not board_id:
+			return response.Response(
+				{"success": False, "message": "Board ID is required."},
+				status=status.HTTP_400_BAD_REQUEST
+			)
+		try:
+			# 게시글을 가져옵니다.
+			board = Notice.objects.get(id=board_id)
+   
+		except Notice.DoesNotExist:
+			# 게시글이 없으면 404 오류 반환
+			return response.Response(
+				{"success": False, "message": "Post not found."},
+				status=status.HTTP_404_NOT_FOUND
+			)
+	
+		# 게시글 삭제 권한 확인
+		if request.user.is_superuser or request.user.is_staff or board.author == request.user:
+			board.delete()  # 권한이 있으면 게시글 삭제
+			return response.Response(
+				{"success": True, "message": "Board deleted successfully"},
+				status=status.HTTP_200_OK
+			)
+		
+		# 권한이 없으면 403 오류 반환
+		return response.Response(
+			{"success": False, "message": "You are not authorized to delete this post."},
+			status=status.HTTP_403_FORBIDDEN
+		)

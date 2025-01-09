@@ -3,7 +3,6 @@ from django.contrib import admin
 from rest_framework_simplejwt import views as jwt_views
 
 from operation_action.usermanage import UserAPIView, LoginAPIView
-from operation_action.userboard import BoardAPIView
 from operation_action.usernotice import NoticeAPIView
 from operation_action.userfiles import UserProfileUploadView
 from operation_action.workforce_API import WorkforceAPIView
@@ -19,7 +18,6 @@ urlpatterns = [
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('login/', LoginAPIView.as_view(), name='login-api'),
     path('user/', UserAPIView.as_view(), name='user-api'),    
-    path('board/', BoardAPIView.as_view(), name='board-api'),    
     path('notice/', NoticeAPIView.as_view(), name='notice-api'),
     path('workforce/', WorkforceAPIView.as_view(), name='worker-api'),    
     path('upload/', UserProfileUploadView.as_view(), name='upload-profile'),
