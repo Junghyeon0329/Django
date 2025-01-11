@@ -1,15 +1,5 @@
-# board/serializers.py
 from rest_framework import serializers
-from .models import Board, Notice, UserProfile
-
-class BoardSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Board
-        fields = ['id', 'title', 'content', 'author_id', 'created_at', 'updated_at']
-
-    def create(self, validated_data):
-        validated_data['author'] = self.context['request'].user
-        return super().create(validated_data)
+from .models import Notice, UserProfile
     
 class NoticeSerializer(serializers.ModelSerializer):
     author_email = serializers.SerializerMethodField()

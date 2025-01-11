@@ -29,8 +29,6 @@ class NoticeAPIView(views.APIView):
 
 	""" GET 요청: 게시글 목록 가져오기 """
 	def get(self, request, *args, **kwargs):
-		
-		page = request.query_params.get('page', 1)  # 기본 값 1로 설정
 				
 		queryset = Notice.objects.all().order_by('-created_at')
 		
@@ -68,6 +66,7 @@ class NoticeAPIView(views.APIView):
 				status=status.HTTP_400_BAD_REQUEST
 			)
   
+	""" DELETE 요청: 게시글 삭제 """
 	def delete(self, request, *args, **kwargs):
 	   
 		board_id = request.data.get('board_id', None)
