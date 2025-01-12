@@ -10,13 +10,15 @@ class NoticeAPIView(views.APIView):
  
 	def get_throttles(self):
 		throttles = super().get_throttles()
-		if self.request.method == 'POST':  # POST 요청에 대해서만 1초 제한을 적용
+		if self.request.method == 'POST': 
+			throttles.append(OneSecondThrottle())
+		elif self.request.method == 'DELETE': 
 			throttles.append(OneSecondThrottle())
 		return throttles    
 
 	def get_permissions(self):
 		permission = []  
-		if self.request.method in ['POST']:			
+		if self.request.method in ['POST', 'DELETE']:			
 			permission.append(permissions.IsAdminUser())
 	
 		return permission
@@ -68,7 +70,6 @@ class NoticeAPIView(views.APIView):
   
 	""" DELETE 요청: 게시글 삭제 """
 	def delete(self, request, *args, **kwargs):
-	   
 		board_id = request.data.get('board_id', None)
 
 		# board_id가 없으면 400 오류 반환
