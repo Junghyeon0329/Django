@@ -42,11 +42,9 @@ INSTALLED_APPS = [
     
     'rest_framework',
     'rest_framework_simplejwt',    
-    'operation_action.apps.OperationActionConfig',
     'corsheaders',
+    'operation_action.apps.OperationActionConfig',
 ]
-
-AUTH_USER_MODEL = 'operation_action.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

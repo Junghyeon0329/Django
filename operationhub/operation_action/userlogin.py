@@ -10,6 +10,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 import operationhub.settings as setting
+from .utils import is_password_expired
 
 class LoginAPIView(views.APIView):
 	
@@ -51,7 +52,11 @@ class LoginAPIView(views.APIView):
 				{"success": False, "message": "This account is disabled."},
 				status=status.HTTP_403_FORBIDDEN  # 비활성화된 계정 상태 코드
 			)
-	
+		print("(1)")
+		password_expired = is_password_expired(user)
+		print("(2)")
+		print(password_expired)
+   
 		# 로그인 처리
 		login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
@@ -70,13 +75,14 @@ class LoginAPIView(views.APIView):
 					"username": user.username,
 	 				"email": user.email,
 					"joinedDate" : user.date_joined,
-					"staff": staff_or_superuser
+					"staff": staff_or_superuser,
+					"password_expired": password_expired 
 				},
 				"message": "Login successful."
 			},
 			status=status.HTTP_200_OK
 		)
-    
+	
 	""" 비밀번호 초기화 API """
 	def put(self, request, *args, **kwargs):
 		email = request.data.get('email')
