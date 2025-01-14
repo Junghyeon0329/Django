@@ -52,10 +52,8 @@ class LoginAPIView(views.APIView):
 				{"success": False, "message": "This account is disabled."},
 				status=status.HTTP_403_FORBIDDEN  # 비활성화된 계정 상태 코드
 			)
-		print("(1)")
-		password_expired = is_password_expired(user)
-		print("(2)")
-		print(password_expired)
+		
+		password_expired = is_password_expired(user)		
    
 		# 로그인 처리
 		login(request, user, backend='django.contrib.auth.backends.ModelBackend')
