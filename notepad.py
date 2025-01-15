@@ -37,3 +37,12 @@ class TokenRefreshView(APIView):
             })
         except Exception as e:
             return Response({'detail': str(e)}, status=400)
+
+
+# TODO
+
+"""
+    회원가입 시 비밀번호 변경 기록 현재로 기입
+    비밀번호 변경 시 기록 UPDATE
+
+"""

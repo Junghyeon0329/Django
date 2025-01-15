@@ -10,19 +10,24 @@ from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 import operationhub.settings as setting
-from .utils import is_password_expired
+from .models import PasswordHistory
+from datetime import timedelta
+from django.utils import timezone
+
 
 class LoginAPIView(views.APIView):
 	
 	authentication_classes = []
 	permission_classes = [AllowAny]
+	password_expiry_duration = timedelta(days=30)
 	
 	""" 사용자 로그인 및 JWT 토큰 발급 """
 	def post(self, request):
-	
+		
 		email = request.data.get('email')
 		password = request.data.get('password')
-
+		password_expired =  False
+		
 		# 필수 필드 체크
 		if not email or not password:
 			return response.Response(
@@ -52,9 +57,11 @@ class LoginAPIView(views.APIView):
 				{"success": False, "message": "This account is disabled."},
 				status=status.HTTP_403_FORBIDDEN  # 비활성화된 계정 상태 코드
 			)
-		
-		password_expired = is_password_expired(user)		
    
+		latest_password_history = PasswordHistory.objects.filter(user=user).first()	
+		if timezone.now() - latest_password_history.password_changed_at > self.password_expiry_duration:
+			password_expired =  True
+
 		# 로그인 처리
 		login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
