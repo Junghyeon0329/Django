@@ -1,9 +1,8 @@
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth import models, hashers
 from rest_framework import response, status, views, permissions
+from .authentication import OneSecondThrottle
 from datetime import datetime
 import time
-from .authentication import OneSecondThrottle
    
 class UserAPIView(views.APIView):
 	
@@ -37,7 +36,7 @@ class UserAPIView(views.APIView):
 			)
    
 		# email is unique (중복 확인)
-		if User.objects.filter(email=email).exists():
+		if models.User.objects.filter(email=email).exists():
 			return response.Response(
 				{"success": False, "message": "email already exists."},
 				status=status.HTTP_400_BAD_REQUEST
@@ -49,7 +48,7 @@ class UserAPIView(views.APIView):
 		username = f"{current_year}-{timestamp}"
 
 		# username is unique (중복 확인)
-		if User.objects.filter(username=username).exists():
+		if models.User.objects.filter(username=username).exists():
 			return response.Response(
 				{"success": False, "message": "Username already exists."},
 				status=status.HTTP_400_BAD_REQUEST
@@ -57,7 +56,7 @@ class UserAPIView(views.APIView):
    	  
 		try:
 			# 사용자 생성
-			user = User.objects.create_user(username=username, email=email, password=password)
+			user = models.User.objects.create_user(username=username, email=email, password=password)
 			user.is_superuser = is_superuser
 			user.is_staff = is_superuser or is_staff  # superuser일 경우 staff도 True로 설정
 			user.save()
@@ -88,7 +87,7 @@ class UserAPIView(views.APIView):
 
 			try:
 				# 다른 사용자의 계정을 찾아 비활성화
-				target_user = User.objects.get(username=username_to_delete)
+				target_user = models.User.objects.get(username=username_to_delete)
 				target_user.is_active = False  # 계정 비활성화
 				target_user.save()
 
@@ -96,7 +95,7 @@ class UserAPIView(views.APIView):
 					{"success": True, "message": f"User '{username_to_delete}' deactivated successfully."},
 					status=status.HTTP_200_OK
 				)
-			except User.DoesNotExist:
+			except models.User.DoesNotExist:
 				return response.Response(
 					{"success": False, "message": "User not found."},
 					status=status.HTTP_404_NOT_FOUND
@@ -133,7 +132,7 @@ class UserAPIView(views.APIView):
 
 		try:
 			# 사용자 객체 가져오기
-			user = User.objects.get(email=email)
+			user = models.User.objects.get(email=email)
 
 			# 현재 비밀번호 확인 (비밀번호가 맞는지 검증)
 			if not user.check_password(current_password):
@@ -143,7 +142,7 @@ class UserAPIView(views.APIView):
 				)
 
 			# 비밀번호가 맞다면 새로운 비밀번호로 변경
-			user.password = make_password(new_password)  # 새로운 비밀번호를 해싱하여 저장
+			user.password = hashers.make_password(new_password)  # 새로운 비밀번호를 해싱하여 저장
 			user.save()
 
 			return response.Response(
@@ -151,7 +150,7 @@ class UserAPIView(views.APIView):
 				status=status.HTTP_200_OK
 			)
 
-		except User.DoesNotExist:
+		except models.User.DoesNotExist:
 			return response.Response(
 				{"success": False, "message": "User not found."},
 				status=status.HTTP_404_NOT_FOUND

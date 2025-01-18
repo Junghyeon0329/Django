@@ -1,11 +1,9 @@
-from django.shortcuts import render
 from rest_framework import response, views, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
-
-import requests
 from requests.exceptions import RequestException, HTTPError
 from .authentication import OneSecondThrottle
+import requests
 
 class WorkforceAPIView(views.APIView):
 

@@ -1,24 +1,17 @@
-from django.contrib.auth.models import User
-from rest_framework import response, status, views
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import login
-from rest_framework.permissions import AllowAny
 
-from django.core.mail import send_mail
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
+from rest_framework import response, status, views, permissions
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import login, models, tokens
+from django.utils import timezone, http, encoding
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes
-import operationhub.settings as setting
 from .models import PasswordHistory
 from datetime import timedelta
-from django.utils import timezone
 
 
 class LoginAPIView(views.APIView):
 	
 	authentication_classes = []
-	permission_classes = [AllowAny]
+	permission_classes = [permissions.AllowAny]
 	password_expiry_duration = timedelta(days=30)
 	
 	""" 사용자 로그인 및 JWT 토큰 발급 """
@@ -37,8 +30,8 @@ class LoginAPIView(views.APIView):
 
 		# 이메일로 사용자 검색
 		try:
-			user = User.objects.get(email=email)
-		except User.DoesNotExist:
+			user = models.User.objects.get(email=email)
+		except models.User.DoesNotExist:
 			return response.Response(
 				{"success": False, "message": "No user found with this email."},
 				status=status.HTTP_404_NOT_FOUND  # 사용자 없음 상태 코드
@@ -100,13 +93,13 @@ class LoginAPIView(views.APIView):
 
 		try:
 			# 사용자 객체 가져오기
-			user = User.objects.get(email=email)
+			user = models.User.objects.get(email=email)
 
 			# 비밀번호 초기화 토큰 생성
-			token = default_token_generator.make_token(user)
+			token = tokens.default_token_generator.make_token(user)
 
 			# URL 안전하게 인코딩
-			uid = urlsafe_base64_encode(force_bytes(user.pk))
+			uid = http.urlsafe_base64_encode(encoding.force_bytes(user.pk))
 
 			# 이메일 내용 준비
 			# domain = get_current_site(request).domain
@@ -121,18 +114,14 @@ class LoginAPIView(views.APIView):
 				'reset_url': reset_url,
 			})
 
-			try: 
-				send_mail(email_subject, email_message, setting.EMAIL_HOST_USER, [email], fail_silently=False,)
-			except:
-				print(f"Google 보안 정책으로 2022년부터 사용 불가: {reset_url}")
-				pass
+			print(f"Google 보안 정책으로 2022년부터 사용 불가: {reset_url}")
 
 			return response.Response(
 				{"success": True, "message": "Password reset email sent."},
 				status=status.HTTP_200_OK
 			)
 
-		except User.DoesNotExist:
+		except models.User.DoesNotExist:
 			return response.Response(
 				{"success": False, "message": "User not found."},
 				status=status.HTTP_404_NOT_FOUND

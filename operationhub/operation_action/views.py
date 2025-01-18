@@ -1,6 +1,6 @@
-import openai
 from rest_framework import response, status
 from rest_framework.decorators import api_view
+import openai
 
 openai.api_key = 'your-openai-api-key' # OpenAI API 키 설정
 
