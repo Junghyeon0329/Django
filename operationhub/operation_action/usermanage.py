@@ -1,6 +1,7 @@
 from django.contrib.auth import models, hashers
 from rest_framework import response, status, views, permissions
 from .authentication import OneSecondThrottle
+from .models import PasswordHistory
 from datetime import datetime
 import time
    
@@ -60,6 +61,8 @@ class UserAPIView(views.APIView):
 			user.is_superuser = is_superuser
 			user.is_staff = is_superuser or is_staff  # superuser일 경우 staff도 True로 설정
 			user.save()
+			
+			PasswordHistory.objects.create(user=user)
 			
 			return response.Response(
 					{"success": True, "message": "User created successfully."},

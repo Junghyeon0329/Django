@@ -10,7 +10,6 @@ class PasswordResetConfirmView(views.APIView):
         new_password = request.data.get('password')
         
         try:
-            # uid와 token을 통해 사용자 정보와 유효성 검사
             user_id = encoding.force_str(http.urlsafe_base64_decode(uid))
             user = models.User.objects.get(pk=user_id)
 

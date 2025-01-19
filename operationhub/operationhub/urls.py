@@ -2,7 +2,7 @@ from django.urls import path
 from django.contrib import admin
 
 from operation_action import usermanage, userlogin, usernotice, userprofile
-from operation_action import workforce_API, userfile, passwordreset
+from operation_action import workforce_API, userfile, userpasswordreset
 from operation_action.views import chatgpt_response
 
 ''' 관리자를 추가하는 방법 : python manage.py createsuperuser '''
@@ -13,7 +13,7 @@ urlpatterns = [
     path('notice/', usernotice.NoticeAPIView.as_view(), name='notice-api'),
     path('file/', userfile.FileAPIView.as_view(), name='download-file'),
     path('upload/', userprofile.UserProfileUploadView.as_view(), name='upload-profile'),
-    path('password-reset/<uid>/<token>/', passwordreset.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password-reset/<uid>/<token>/', userpasswordreset.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('workforce/', workforce_API.WorkforceAPIView.as_view(), name='worker-api'),    
     path('chat/', chatgpt_response, name='chatgpt_response'),
 ]

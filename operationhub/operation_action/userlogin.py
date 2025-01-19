@@ -7,7 +7,6 @@ from django.template.loader import render_to_string
 from .models import PasswordHistory
 from datetime import timedelta
 
-
 class LoginAPIView(views.APIView):
 	
 	authentication_classes = []
@@ -16,7 +15,7 @@ class LoginAPIView(views.APIView):
 	
 	""" 사용자 로그인 및 JWT 토큰 발급 """
 	def post(self, request):
-		
+				
 		email = request.data.get('email')
 		password = request.data.get('password')
 		password_expired =  False
