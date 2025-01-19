@@ -121,7 +121,6 @@ class UserAPIView(views.APIView):
 	
 	""" 비밀번호 변경 API (자신의 계정만 변경 가능) """
 	def put(self, request, *args, **kwargs):
-				
 		email = request.data.get('email')
 		current_password = request.data.get('current_password')  # 현재 비밀번호
 		new_password = request.data.get('new_password')  # 새로운 비밀번호
@@ -143,6 +142,10 @@ class UserAPIView(views.APIView):
 					{"success": False, "message": "Current password is incorrect."},
 					status=status.HTTP_400_BAD_REQUEST
 				)
+
+			password_history, created = PasswordHistory.objects.get_or_create(user=user)
+			password_history.password_changed_at = datetime.now()  # 현재 시각으로 업데이트
+			password_history.save()
 
 			# 비밀번호가 맞다면 새로운 비밀번호로 변경
 			user.password = hashers.make_password(new_password)  # 새로운 비밀번호를 해싱하여 저장
