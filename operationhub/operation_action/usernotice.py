@@ -3,6 +3,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Notice
 from .serializers import NoticeSerializer
 from .authentication import OneSecondThrottle
+from django.db.models import Q
 from custom import *
 
 class NoticeAPIView(views.APIView):
@@ -31,9 +32,16 @@ class NoticeAPIView(views.APIView):
 
 	""" GET 요청: 게시글 목록 가져오기 """
 	def get(self, request, *args, **kwargs):
-				
+		
+		query = request.query_params.get('query', '').strip()
+   
 		queryset = Notice.objects.all().order_by('-created_at')
 		
+		if query:
+			queryset = queryset.filter(
+				Q(title__icontains=query) | Q(content__icontains=query)
+			)  
+  
 		# Pagination 적용
 		paginator = self.pagination_class()  # CustomPagination 인스턴스 생성
 		paginated_data = paginator.paginate_queryset(queryset, request)
