@@ -44,18 +44,15 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',    
     'corsheaders',
     'operation_action.apps.OperationActionConfig',
-]
-INSTALLED_APPS += [
-    'channels',
+    'channels'
 ]
 
-ASGI_APPLICATION = 'systemtotal.asgi.application'
+ASGI_APPLICATION = 'operationhub.asgi.application'
 
 # Channels Layer 설정 (Redis 사용 추천)
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
-        # 실제 환경에서는 Redis 사용을 추천
         # "BACKEND": "channels_redis.core.RedisChannelLayer",
         # "CONFIG": {
         #     "hosts": [("127.0.0.1", 6379)],

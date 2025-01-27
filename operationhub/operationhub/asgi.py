@@ -16,3 +16,9 @@ application = ProtocolTypeRouter({
         )
     ),
 })
+
+async def connect(self):
+    print(f"Scope: {self.scope}")
+
+
+# https://velog.io/@mimijae/Django-Django-rest-framework%EB%A1%9C-%EC%9B%B9%EC%86%8C%EC%BC%93-%EC%B1%84%ED%8C%85-%EC%84%9C%EB%B2%84-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B02
