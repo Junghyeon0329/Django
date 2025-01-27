@@ -18,3 +18,4 @@ application = ProtocolTypeRouter({
     ),
 })
 # daphne operationhub.asgi:application
+# daphne -b 0.0.0.0 -p 9000 operationhub.asgi:application
