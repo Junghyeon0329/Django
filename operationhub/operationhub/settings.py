@@ -23,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-o9k*p+evqdo*59cx$x*%u9hj26ypw%e9yjcd_8$v^%l_8ivv&v'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = False
+DEBUG = True
+# DEBUG = False
 
 # ALLOWED_HOSTS = []
 ALLOWED_HOSTS = ["*"]
@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,13 +44,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',    
     'corsheaders',
-    'operation_action.apps.OperationActionConfig',
-    'channels'
+    'operation_action.apps.OperationActionConfig',   
 ]
 
 ASGI_APPLICATION = 'operationhub.asgi.application'
 
-# Channels Layer 설정 (Redis 사용 추천)
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",

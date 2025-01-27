@@ -12,8 +12,3 @@
         })),
     ]
 '''
-
-
-# daphne -p 8000 프로젝트명.asgi:application
-
-# uvicorn 프로젝트명.asgi:application --port 8000
