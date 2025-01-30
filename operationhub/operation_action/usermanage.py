@@ -177,7 +177,7 @@ class UserAPIView(views.APIView):
 					# 'is_superuser': user.is_superuser,
 					# 'is_staff': user.is_staff,
 					# 'is_active': user.is_active,
-					'date_joined': user.date_joined,
+					# 'date_joined': user.date_joined,
 				})
 
 			return response.Response(
