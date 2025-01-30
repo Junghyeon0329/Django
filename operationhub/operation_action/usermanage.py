@@ -10,7 +10,7 @@ class UserAPIView(views.APIView):
 	""" 권한 설정 메서드. """
 	def get_permissions(self):
 		permission_classes = []    
-		if self.request.method in ['DELETE','PUT']:
+		if self.request.method in ['DELETE','PUT','GET']:
 			permission_classes.append(permissions.IsAuthenticated())
 		return permission_classes    
 
@@ -161,4 +161,32 @@ class UserAPIView(views.APIView):
 				{"success": False, "message": "User not found."},
 				status=status.HTTP_404_NOT_FOUND
 			)
-				 
+   
+	""" 모든 유저 정보 조회 API """		 
+	def get(self, request, *args, **kwargs):
+		try:
+			# 모든 사용자 정보 가져오기
+			users = models.User.objects.all()
+			
+			# 사용자 정보 리스트 준비
+			user_data = []
+			for user in users:
+				user_data.append({
+					'username': user.username,
+					'email': user.email,
+					# 'is_superuser': user.is_superuser,
+					# 'is_staff': user.is_staff,
+					# 'is_active': user.is_active,
+					'date_joined': user.date_joined,
+				})
+
+			return response.Response(
+				{"success": True, "data": user_data},
+				status=status.HTTP_200_OK
+			)
+
+		except Exception as e:
+			return response.Response(
+				{"success": False, "message": f"Error: {str(e)}."},
+				status=status.HTTP_500_INTERNAL_SERVER_ERROR
+			)

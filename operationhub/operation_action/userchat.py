@@ -26,15 +26,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)        
         message = text_data_json['text']
         message_timestap = text_data_json['timestamp']
+        print()
+        print("message:",message, message_timestap)
+        print()
+        
 
         # 메시지를 그룹으로 전송
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message
-            }
-        )
+        # await self.channel_layer.group_send(
+        #     self.room_group_name,
+        #     {
+        #         'type': 'chat_message',
+        #         'message': message
+        #     }
+        # )
 
     async def chat_message(self, event):
         # 그룹 메시지를 클라이언트로 전송
