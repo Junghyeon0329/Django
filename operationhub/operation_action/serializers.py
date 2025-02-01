@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Notice, UserProfile
+from .models import Notice, UserProfile, Message
     
 class NoticeSerializer(serializers.ModelSerializer):
     author_email = serializers.SerializerMethodField()
@@ -19,3 +19,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['username', 'profile_picture']
+        
+        
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ['user', 'email', 'text', 'timestamp']
