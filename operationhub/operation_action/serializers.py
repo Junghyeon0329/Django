@@ -24,4 +24,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['user', 'email', 'text', 'timestamp']
+        fields = ['sender', 'receiver_email', 'text', 'timestamp']

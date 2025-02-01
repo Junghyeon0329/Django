@@ -1,17 +1,30 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Message
 from .serializers import MessageSerializer
-from rest_framework import response
+from rest_framework import response, views, status
+from .models import Message
+
+class ChatHistoryAPIView(views.APIView):
+    def get(self, request, email):
+        # 이메일에 해당하는 메시지들을 필터링
+        messages = Message.objects.filter(receiver_email=email).order_by('timestamp')
+        
+        # 메시지가 없으면 빈 리스트 반환
+        if not messages:
+            return response.Response({"messages": []}, status=status.HTTP_200_OK)
+
+        # 메시지를 직렬화하여 반환
+        serializer = MessageSerializer(messages, many=True)
+        return response.Response({"messages": serializer.data}, status=status.HTTP_200_OK)
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
-        self.email = self.scope['url_route']['kwargs']['email']  # URL에서 이메일 가져오기
-        self.room_name = f"chat_{self.email}"  # 이메일에 해당하는 채팅 방 이름
-        self.room_group_name = f"chat_{self.email}"  # 이메일을 기반으로 한 방 그룹
+        self.email = self.scope['url_route']['kwargs']['email']
+        self.room_name = f"chat_{self.email}"
+        self.room_group_name = f"chat_{self.email}"
 
-        # WebSocket에 연결할 때, 채팅 방 그룹에 가입
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -41,10 +54,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def chat_message(self, event):
-        # 채팅 방 그룹으로부터 받은 메시지를 클라이언트에 전달
         message = event['message']
-
-        # WebSocket으로 메시지 보내기
         await self.send(text_data=json.dumps({
             'message': message
         }))
+
