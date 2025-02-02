@@ -16,6 +16,6 @@ urlpatterns = [
     path('password-reset/<uid>/<token>/', userpasswordreset.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('workforce/', workforce_API.WorkforceAPIView.as_view(), name='worker-api'),    
     path('chatgpt/', chatgpt_response, name='chatgpt_response'),
-    path('chat/<str:email>/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),    
+    path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),    
 ]
 
