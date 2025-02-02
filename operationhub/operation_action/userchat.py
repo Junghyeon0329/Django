@@ -5,7 +5,7 @@ from rest_framework import response, views, status
 from .models import Message, User
 from django.db.models import Q
 from channels.db import database_sync_to_async
-
+from datetime import datetime
 
 class ChatHistoryAPIView(views.APIView):
     def post(self, request):
@@ -59,6 +59,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 if sender and receiver:
                     message = Message(sender=sender, receiver_email=receiver, text=message_text)
                     await self.save_message(message)
+                    
+                    sender_email = sender.email
+                    receiver_email = receiver.email
+                    
+                    await self.channel_layer.send(
+                    self.channel_name,
+                    {
+                        'type': 'chat_message',
+                        'message': message_text, 
+                        'sender_email': sender_email,
+                        'receiver_email': receiver_email,
+                    }
+                )
+                    
                 else:
                     print("Sender or Receiver not found")
 
@@ -80,10 +94,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return None
         
     async def chat_message(self, event):
-        message = event['message']
+        
         await self.send(text_data=json.dumps({
-            'message': message
+            'message': {
+                'text': event['message'],
+                'sender_email': event['sender_email'],
+                'receiver_email': event['receiver_email'],
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            }
         }))
+   
         
     async def disconnect(self, close_code):
         pass
