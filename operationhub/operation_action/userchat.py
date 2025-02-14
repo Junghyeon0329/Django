@@ -45,8 +45,8 @@ import jwt
 from django.conf import settings
 class ChatConsumer(AsyncWebsocketConsumer):
     
-    async def connect(self):
-        """ 웹소켓 연결 시 실행됨 """
+    """ 웹소켓 연결 시 실행 """
+    async def connect(self):        
         query_string = self.scope["query_string"].decode()
         token = dict(q.split("=") for q in query_string.split("&")).get("token")
         
@@ -55,34 +55,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        # 🔹 JWT 토큰 검증
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            self.user_id = payload["user_id"]  # JWT에서 user_id 추출
+            self.user_id = payload["user_id"]
         except jwt.ExpiredSignatureError:
-            print("❌ WebSocket 연결 실패: 토큰 만료됨")
             await self.close()
             return
         except jwt.DecodeError:
-            print("❌ WebSocket 연결 실패: 토큰 검증 실패")
             await self.close()
             return
 
-        # 🔹 사용자 정보 가져오기 (user_id로 조회)
         self.user = await self.get_user_by_id(self.user_id)
 
         if not self.user:
-            print("❌ WebSocket 연결 실패: 사용자 정보 없음")
             await self.close()
             return
 
-        # 현재 연결을 active_connections에 저장
         active_connections[self.user.email] = self.channel_name
         await self.accept()
         print(f"✅ {self.user.email} 웹소켓 연결됨")
-            
-    async def receive(self, text_data):
-        """ 클라이언트로부터 메시지를 받을 때 실행됨 """
+        
+    """ 클라이언트로부터 메시지를 받을 때 실행 """    
+    async def receive(self, text_data):        
         text_data_json = json.loads(text_data)
                 
         message_text = text_data_json.get('text')
@@ -108,6 +102,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     }))
 
                     # 상대방이 WebSocket에 연결되어 있으면 메시지 전송
+                    // 오프라인일때 어떻게 처리할지 생각
                     if receiver.email in active_connections:
                         await self.channel_layer.send(
                             active_connections[receiver.email],
@@ -121,14 +116,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     else:
                         print(f"⚠️ {receiver_email}님이 현재 온라인 상태가 아님.")
 
-                else:
-                    print("❌ Sender or Receiver not found")
-
+                else: raise
             except Exception as e:
-                print(f"❌ Error: {e}")
+                print(f"error: {e}")
 
         else:
-            print("⚠️ Invalid message data")
+            print("Invalid message data")
     
     @database_sync_to_async
     def save_message(self, message):
@@ -136,7 +129,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_user_by_id(self, user_id):
-        """ user_id로 사용자 정보 가져오기 """
         try:
             return User.objects.get(id=user_id)
         except User.DoesNotExist:
@@ -148,9 +140,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return User.objects.get(email=email)            
         except User.DoesNotExist:
             return None
-    
+        
+    """ WebSocket을 통해 메시지 전송 """
     async def chat_message(self, event):
-        """ WebSocket을 통해 메시지 전송 """
         await self.send(text_data=json.dumps({
             'message': {
                 'text': event['message'],
@@ -159,9 +151,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             }
         }))
-   
+        
+    """ 웹소켓 연결이 종료될 때 실행됨 """
     async def disconnect(self, close_code):
-        """ 웹소켓 연결이 종료될 때 실행됨 """
-        if self.email in active_connections:
-            del active_connections[self.email]  # 연결 제거
-        print(f"🔴 {self.email} 웹소켓 연결 종료")
+        if hasattr(self, 'user') and self.user.email in active_connections:
+            del active_connections[self.user.email]  # 연결 제거
+            print(f"🔴 {self.user.email} 웹소켓 연결 종료")
