@@ -11,7 +11,7 @@ class ChatHistoryAPIView(views.APIView):
     def post(self, request):
         my_email = request.data.get('myEmail')
         other_email = request.data.get('otherEmail')
-
+        print("도착했습니다.")
         if not my_email or not other_email:
             return response.Response(
                 {"detail": "Both 'myEmail' and 'otherEmail' are required."},
@@ -21,6 +21,7 @@ class ChatHistoryAPIView(views.APIView):
         try:
             my_user = User.objects.get(email=my_email)
             other_user = User.objects.get(email=other_email)
+            
         except User.DoesNotExist:
             return response.Response(
                 {"detail": "One or both users not found."},
@@ -28,8 +29,8 @@ class ChatHistoryAPIView(views.APIView):
             )
 
         messages = Message.objects.filter(
-            (Q(sender=my_user) & Q(receiver_email=other_user)) |
-            (Q(sender=other_user) & Q(receiver_email=my_user))
+            (Q(sender=my_user) & Q(receiver_email=other_email)) |
+            (Q(sender=other_user) & Q(receiver_email=my_email))
         ).order_by('timestamp')
         
         if not messages:
@@ -102,7 +103,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     }))
 
                     # 상대방이 WebSocket에 연결되어 있으면 메시지 전송
-                    // 오프라인일때 어떻게 처리할지 생각
                     if receiver.email in active_connections:
                         await self.channel_layer.send(
                             active_connections[receiver.email],
