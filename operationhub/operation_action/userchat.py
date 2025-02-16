@@ -11,7 +11,6 @@ class ChatHistoryAPIView(views.APIView):
     def post(self, request):
         my_email = request.data.get('myEmail')
         other_email = request.data.get('otherEmail')
-        print("도착했습니다.")
         if not my_email or not other_email:
             return response.Response(
                 {"detail": "Both 'myEmail' and 'otherEmail' are required."},
@@ -32,6 +31,41 @@ class ChatHistoryAPIView(views.APIView):
             (Q(sender=my_user) & Q(receiver_email=other_email)) |
             (Q(sender=other_user) & Q(receiver_email=my_email))
         ).order_by('timestamp')
+        
+        if messages.exists():
+            messages.update(is_read=True)
+        
+        if not messages:
+            return response.Response({"messages": []}, status=status.HTTP_200_OK)
+
+        serializer = MessageSerializer(messages, many=True)
+        return response.Response({"messages": serializer.data}, status=status.HTTP_200_OK)
+    
+    def get(self, request):
+        
+        my_email = request.GET.get('myEmail')       
+        
+        if not my_email:
+            return response.Response(
+                {"detail": "'myEmail'is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            my_user = User.objects.get(email=my_email)
+            
+        except User.DoesNotExist:
+            return response.Response(
+                {"detail": "One or both users not found."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        messages = Message.objects.filter(
+            Q(receiver_email=my_email)).order_by('timestamp')
+        
+        print(messages)
+        
+        if messages.exists():
+            messages.update(is_read=True)
         
         if not messages:
             return response.Response({"messages": []}, status=status.HTTP_200_OK)
@@ -104,6 +138,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                     # 상대방이 WebSocket에 연결되어 있으면 메시지 전송
                     if receiver.email in active_connections:
+                        if not message.is_read:
+                            message.is_read = True
+                            await self.save_message(message)
+                            
                         await self.channel_layer.send(
                             active_connections[receiver.email],
                             {
