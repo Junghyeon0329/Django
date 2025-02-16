@@ -58,19 +58,22 @@ class ChatHistoryAPIView(views.APIView):
                 {"detail": "One or both users not found."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
+        
         messages = Message.objects.filter(
-            Q(receiver_email=my_email)).order_by('timestamp')
-        
-        print(messages)
-        
+            receiver_email=my_email, is_read=False).order_by('timestamp')
+   
+        import copy
+        unread_messages = copy.deepcopy(messages)
+        print(unread_messages)
         if messages.exists():
             messages.update(is_read=True)
-        
-        if not messages:
+            
+        serializer = MessageSerializer(unread_messages, many=True) 
+        print(unread_messages)
+        if not unread_messages:
+            
             return response.Response({"messages": []}, status=status.HTTP_200_OK)
 
-        serializer = MessageSerializer(messages, many=True)
         return response.Response({"messages": serializer.data}, status=status.HTTP_200_OK)
 
 
