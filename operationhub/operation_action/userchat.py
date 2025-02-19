@@ -62,14 +62,12 @@ class ChatHistoryAPIView(views.APIView):
         messages = Message.objects.filter(
             receiver_email=my_email, is_read=False).order_by('timestamp')
    
-        unread_messages = list(messages)
-        
-        if messages.exists():
-            messages.update(is_read=True)
+        # if messages.exists():
+        #     messages.update(is_read=True)
             
-        serializer = MessageSerializer(unread_messages, many=True) 
+        serializer = MessageSerializer(messages, many=True) 
         
-        if not unread_messages:
+        if not messages:
             
             return response.Response({"messages": []}, status=status.HTTP_200_OK)
 
