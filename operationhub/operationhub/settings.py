@@ -44,6 +44,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',    
     'corsheaders',
     'operation_action.apps.OperationActionConfig',   
+    
+    "notices.apps.NoticesConfig",
+    
 ]
 
 ASGI_APPLICATION = 'operationhub.asgi.application'
