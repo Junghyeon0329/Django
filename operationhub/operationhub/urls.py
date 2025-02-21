@@ -19,10 +19,11 @@ urlpatterns = [
     path('chatgpt/', chatgpt_response, name='chatgpt_response'),
     path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),    
     
-    path('notice/', usernotice.NoticeAPIView.as_view(), name='notice-api'),
-    path("roles", NoticeViewSet.as_view({
+    # path('notice/', usernotice.NoticeAPIView.as_view(), name='notice-api'),
+    path("notice", NoticeViewSet.as_view({
         "get": "list",
         "post": "create",
+        "delete": "destroy",
     })),
     
 ]

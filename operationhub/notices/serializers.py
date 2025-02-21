@@ -6,8 +6,9 @@ class NoticeSerializer(serializers.ModelSerializer):
 		model = Notice
 		fields = [
 			"id",
-			"code",
-			"name",
-			"description",
-			"permissions",
+			"title",
+			"content",
+			"author",
+			"created_at",
+			"updated_at",
 		]

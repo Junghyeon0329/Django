@@ -8,7 +8,6 @@ class OneSecondThrottle(UserRateThrottle): rate = '1/second'
 class NoticeViewSet(viewsets.ModelViewSet):
 
 	queryset = Notice.objects.all().order_by("-id")
-	# queryset = Notice.objects.prefetch_related('permissions', 'users').order_by("-id")
 	serializer_class = NoticeSerializer
  
 	def get_serializer_class(self):
