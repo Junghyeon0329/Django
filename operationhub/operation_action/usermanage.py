@@ -1,10 +1,12 @@
 from django.contrib.auth import models, hashers
-from rest_framework import response, status, views, permissions
-from .authentication import OneSecondThrottle
+from rest_framework import response, status, views, permissions, throttling
 from .models import PasswordHistory
 from datetime import datetime
 import time
-   
+
+class OneSecondThrottle(throttling.UserRateThrottle): 
+	rate = '1/second'	
+
 class UserAPIView(views.APIView):
 	
 	""" 권한 설정 메서드. """

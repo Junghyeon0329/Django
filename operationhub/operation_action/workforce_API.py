@@ -1,9 +1,11 @@
-from rest_framework import response, views, status
+from rest_framework import response, views, status, throttling
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
 from requests.exceptions import RequestException, HTTPError
-from .authentication import OneSecondThrottle
 import requests
+
+class OneSecondThrottle(throttling.UserRateThrottle): 
+	rate = '1/second'	
 
 class WorkforceAPIView(views.APIView):
 

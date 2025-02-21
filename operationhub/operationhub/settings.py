@@ -73,7 +73,6 @@ AUTHENTICATION_BACKENDS = (
 
 # JWT 설정
 from datetime import timedelta
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # 토큰 유효 기간 (15분)
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # 리프레시 토큰 유효 기간 (1일)

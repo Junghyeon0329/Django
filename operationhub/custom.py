@@ -1,4 +1,7 @@
-from rest_framework import pagination, response
+from rest_framework import pagination, response, throttling
+
+class OneSecondThrottle(throttling.UserRateThrottle): 
+	rate = '1/second'
 
 class CustomPagination(pagination.PageNumberPagination):
     page_size = 5
@@ -12,3 +15,4 @@ class CustomPagination(pagination.PageNumberPagination):
             'previous': self.get_previous_link(),
             'results': data
         })
+

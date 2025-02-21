@@ -1,17 +1,16 @@
-from rest_framework.throttling import UserRateThrottle
+
 from rest_framework import viewsets, permissions, response, status
-from rest_framework_simplejwt.authentication import JWTAuthentication
+# from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db import transaction
 from notices import models, serializers
-from custom import * # CustomPagination
-
-class OneSecondThrottle(UserRateThrottle): 
-	rate = '1/second'	 
+# from workforce_API import CustomRemoteJWTAuthentication
+import workforce_API
+import custom
 
 class NoticeViewSet(viewsets.ModelViewSet):
 	queryset = models.Notice.objects.all().order_by("-id")
 	serializer_class = serializers.NoticeSerializer
-	pagination_class = CustomPagination
+	pagination_class = custom.CustomPagination
  
 	def get_serializer_class(self):
 		return serializers.NoticeSerializer
@@ -19,7 +18,7 @@ class NoticeViewSet(viewsets.ModelViewSet):
 	def get_throttles(self):
 		throttles = super().get_throttles()
 		if self.action in ['create', 'partial_update', 'destroy']:
-			throttles.append(OneSecondThrottle())			
+			throttles.append(custom.OneSecondThrottle())			
 		return throttles
 
 	def get_permissions(self):
@@ -32,11 +31,11 @@ class NoticeViewSet(viewsets.ModelViewSet):
 		if self.request.method in ['GET']: 
 			return []
 		else:	
-			return [JWTAuthentication()]
+			# return [JWTAuthentication()]
+			return [workforce_API.JWTAuthentication()]
 
 	@transaction.atomic
 	def create(self, request, *args, **kwargs):
-	 
 		# **title, content, author
 		serializer = self.get_serializer(data=request.data)
 	
@@ -46,10 +45,11 @@ class NoticeViewSet(viewsets.ModelViewSet):
 				{"detail": f"Notice has been successfully created."},
 				status=status.HTTP_201_CREATED
 			)
-		return response.Response(
-			serializer.errors, 
-			status=status.HTTP_400_BAD_REQUEST
-		)
+		else:
+			return response.Response(
+				serializer.errors, 
+				status=status.HTTP_400_BAD_REQUEST
+			)
   
 	@transaction.atomic
 	def partial_update(self, request, *args, **kwargs):
@@ -80,7 +80,10 @@ class NoticeViewSet(viewsets.ModelViewSet):
 				status=status.HTTP_200_OK
 			)
 		else:
-			return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+			return response.Response(
+				serializer.errors, 
+				status=status.HTTP_400_BAD_REQUEST
+			)
 
 	@transaction.atomic
 	def destroy(self, request, *args, **kwargs):
