@@ -18,13 +18,13 @@ class NoticeViewSet(viewsets.ModelViewSet):
 
 	def get_throttles(self):
 		throttles = super().get_throttles()
-		if self.action in ['create', 'destroy']:
+		if self.action in ['create', 'partial_update', 'destroy']:
 			throttles.append(OneSecondThrottle())			
 		return throttles
 
 	def get_permissions(self):
 		permission = [] 
-		if self.request.method in ['POST', 'DELETE']:			
+		if self.request.method in ['POST', 'PATCH', 'DELETE']:			
 			permission.append(permissions.IsAdminUser())			
 		return permission
 
@@ -50,6 +50,37 @@ class NoticeViewSet(viewsets.ModelViewSet):
 			serializer.errors, 
 			status=status.HTTP_400_BAD_REQUEST
 		)
+  
+	@transaction.atomic
+	def partial_update(self, request, *args, **kwargs):
+		
+		# **board_id
+		board_id = request.data.get("board_id")
+  
+		if not board_id:
+			return response.Response(
+				{"detail": "The 'board_id' field is required to delete a notice."},
+				status=status.HTTP_400_BAD_REQUEST
+			)
+   
+		try:
+			notice_instance = models.Notice.objects.get(id=board_id)
+		except models.Notice.DoesNotExist:
+			return response.Response(
+				{"detail": f"Notice is not found."},
+				status=status.HTTP_404_NOT_FOUND
+			)
+   
+		serializer = self.get_serializer(notice_instance, data=request.data, partial=True)
+	   
+		if serializer.is_valid():
+			serializer.save()
+			return response.Response(
+				{"detail": "Notice has been successfully updated."},
+				status=status.HTTP_200_OK
+			)
+		else:
+			return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 	@transaction.atomic
 	def destroy(self, request, *args, **kwargs):
@@ -59,11 +90,12 @@ class NoticeViewSet(viewsets.ModelViewSet):
   
 		if not board_id:
 			return response.Response(
-                {"detail": "The 'board_id' field is required to delete a notice."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+				{"detail": "The 'board_id' field is required to delete a notice."},
+				status=status.HTTP_400_BAD_REQUEST
+			)
 		models.Notice.objects.filter(id=board_id).delete()
 		return response.Response(
-            {"detail": f"Notice has been successfully deleted."},
-            status=status.HTTP_200_OK
-        )
+			{"detail": f"Notice has been successfully deleted."},
+			status=status.HTTP_200_OK
+		)
+  
