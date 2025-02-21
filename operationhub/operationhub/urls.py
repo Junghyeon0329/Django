@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib import admin
 
-from operation_action import usermanage, userlogin, usernotice, userprofile
+from operation_action import usermanage, userlogin, userprofile
 from operation_action import workforce_API, userfile, userpasswordreset, userchat
 from operation_action.views import chatgpt_response
 
@@ -18,8 +18,7 @@ urlpatterns = [
     path('workforce/', workforce_API.WorkforceAPIView.as_view(), name='worker-api'),    
     path('chatgpt/', chatgpt_response, name='chatgpt_response'),
     path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),    
-    
-    # path('notice/', usernotice.NoticeAPIView.as_view(), name='notice-api'),
+
     path("notice", NoticeViewSet.as_view({
         "get": "list",
         "post": "create",

@@ -2,7 +2,6 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework import viewsets, permissions, response, status
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db import transaction
-
 from notices import models, serializers
 from custom import * # CustomPagination
 
@@ -37,9 +36,34 @@ class NoticeViewSet(viewsets.ModelViewSet):
 
 	@transaction.atomic
 	def create(self, request, *args, **kwargs):
-		serializer = self.get_serializer(data=request.data) # title, content, author
+	 
+		# **title, content, author
+		serializer = self.get_serializer(data=request.data)
 	
 		if serializer.is_valid():
 			self.perform_create(serializer)
-			return response.Response(serializer.data, status=status.HTTP_201_CREATED)
-		return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+			return response.Response(
+				{"detail": f"Notice has been successfully created."},
+				status=status.HTTP_201_CREATED
+			)
+		return response.Response(
+			serializer.errors, 
+			status=status.HTTP_400_BAD_REQUEST
+		)
+
+	@transaction.atomic
+	def destroy(self, request, *args, **kwargs):
+		
+		# **board_id
+		board_id = request.data.get("board_id")
+  
+		if not board_id:
+			return response.Response(
+                {"detail": "The 'board_id' field is required to delete a notice."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+		models.Notice.objects.filter(id=board_id).delete()
+		return response.Response(
+            {"detail": f"Notice has been successfully deleted."},
+            status=status.HTTP_200_OK
+        )

@@ -43,8 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',    
     'corsheaders',
-    'operation_action.apps.OperationActionConfig',   
     
+    'operation_action.apps.OperationActionConfig',       
     "notices.apps.NoticesConfig",
     
 ]
@@ -75,14 +75,13 @@ AUTHENTICATION_BACKENDS = (
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # 토큰 유효 기간 (15분)
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # 토큰 유효 기간 (15분)
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  # 리프레시 토큰 유효 기간 (1일)
     'ROTATE_REFRESH_TOKENS': False,  # 리프레시 토큰 회전 여부
     'BLACKLIST_AFTER_ROTATION': False,  # 토큰 회전 후 블랙리스트 여부
 }
 
 import os
-
 MEDIA_URL = '/media/'  # 파일 URL 경로
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 파일이 저장될 경로
 
@@ -123,9 +122,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'workforcehub.wsgi.application'
 WSGI_APPLICATION = 'operationhub.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
