@@ -100,6 +100,21 @@ CACHES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT 인증 추가
+    ),
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+	'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # 액세스 토큰 유효 시간
+	'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # 리프레시 토큰 유효 시간
+	'ROTATE_REFRESH_TOKENS': True,
+	'BLACKLIST_AFTER_ROTATION': True,
+	'ALGORITHM': 'HS256',
+	'SIGNING_KEY': 'your_secret_key',  # 실제 서비스에서는 환경변수로 관리
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
