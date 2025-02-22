@@ -1,9 +1,7 @@
 
-from rest_framework import viewsets, permissions, response, status
-# from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework import viewsets, permissions, response, status, exceptions
 from django.db import transaction
 from notices import models, serializers
-# from workforce_API import CustomRemoteJWTAuthentication
 import workforce_API
 import custom
 
@@ -22,17 +20,39 @@ class NoticeViewSet(viewsets.ModelViewSet):
 		return throttles
 
 	def get_permissions(self):
+		print("\nget_permissions\n")
 		permission = [] 
 		if self.request.method in ['POST', 'PATCH', 'DELETE']:			
 			permission.append(permissions.IsAdminUser())			
 		return permission
-
+		# !권한 어떻게 처리할지 
+  
 	def get_authenticators(self):
+		print("\nget_authenticators\n")
 		if self.request.method in ['GET']: 
 			return []
 		else:	
-			# return [JWTAuthentication()]
-			return [workforce_API.JWTAuthentication()]
+			authentication = workforce_API.JWTAuthentication()
+			result = authentication.verify_token(self.request)
+			print("(1)")
+			print(result)
+			
+			if result: 
+				if result['success']: return []
+				else:
+					raise exceptions.AuthenticationFailed("오류: 401: '인증 실패'")
+					# return {"success": False,"message": f"오류: 401: '인증 실패'"}
+					# return response.Response(
+					# 	{"success": False, "message": "인증실패"},
+					# 	status=status.HTTP_400_BAD_REQUEST
+					# )
+			else:
+				raise exceptions.AuthenticationFailed("오류: 401: '인증 정보가 없습니다'")
+				# return {"success": False,"message": f"오류: 401: '인증 정보가 없습니다'"}
+				# return response.Response(
+				# 		{"success": False, "message": "인증 정보가 없습니다."},
+				# 		status=status.HTTP_400_BAD_REQUEST
+				# 	)
 
 	@transaction.atomic
 	def create(self, request, *args, **kwargs):

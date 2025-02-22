@@ -14,11 +14,10 @@ class UserAuthViewSet(viewsets.ModelViewSet):
 		return throttles
 
 	def login(self, request, *args, **kwargs):
-    
 		email = request.data.get('email')
 		password = request.data.get('password')
 		password_expired =  False
-		
+	
 		if not email or not password:
 			return response.Response(
 				{"success": False, "message": "email and password are required."},
@@ -79,7 +78,6 @@ class UserAuthViewSet(viewsets.ModelViewSet):
 	def verify_token(self, request, *args, **kwargs):
 
 		token_key = request.GET.get("token")
-		
 		if not token_key:
 			return response.Response(
 				{"success": False, "message": "Token required"},

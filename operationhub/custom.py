@@ -1,8 +1,5 @@
 from rest_framework import pagination, response, throttling
 
-class OneSecondThrottle(throttling.UserRateThrottle): 
-	rate = '1/second'
-
 class CustomPagination(pagination.PageNumberPagination):
     page_size = 5
     page_size_query_param = 'page_size'
@@ -16,3 +13,5 @@ class CustomPagination(pagination.PageNumberPagination):
             'results': data
         })
 
+class OneSecondThrottle(throttling.UserRateThrottle): 
+	rate = '1/second'

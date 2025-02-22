@@ -1,10 +1,16 @@
-from rest_framework import response, status
-from rest_framework.decorators import api_view
+from rest_framework import response, status, decorators
+import workforce_API
+    
+@decorators.api_view(['POST'])
+def homepage_login(request):
+    Authentication = workforce_API.JWTAuthentication()
+    response = Authentication.login(request)
+    print(response.json())
+    return response
+
 import openai
-
 openai.api_key = 'your-openai-api-key' # OpenAI API 키 설정
-
-@api_view(['POST'])
+@decorators.api_view(['POST'])
 def chatgpt_response(request):
     try:
         # 요청으로부터 사용자 메시지 가져오기
@@ -35,5 +41,3 @@ def chatgpt_response(request):
             {"success": False, "message": f"Error: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-        
-

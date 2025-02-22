@@ -13,72 +13,9 @@ class LoginAPIView(views.APIView):
 	permission_classes = [permissions.AllowAny]
 	password_expiry_duration = timedelta(days=30)
 	
-	""" 사용자 로그인 및 JWT 토큰 발급 """
-	def post(self, request):
-				
-		email = request.data.get('email')
-		password = request.data.get('password')
-		password_expired =  False
+	# """ 사용자 로그인 및 JWT 토큰 발급 """
+	# def post(self, request):
 		
-		# 필수 필드 체크
-		if not email or not password:
-			return response.Response(
-				{"success": False, "message": "email and password are required."},
-				status=status.HTTP_400_BAD_REQUEST
-			)
-
-		# 이메일로 사용자 검색
-		try:
-			user = models.User.objects.get(email=email)
-		except models.User.DoesNotExist:
-			return response.Response(
-				{"success": False, "message": "No user found with this email."},
-				status=status.HTTP_404_NOT_FOUND  # 사용자 없음 상태 코드
-			)
-
-		# 사용자 인증 (비밀번호 체크)
-		if not user.check_password(password):
-			return response.Response(
-				{"success": False, "message": "Incorrect password."},
-				status=status.HTTP_401_UNAUTHORIZED  # 비밀번호 불일치 상태 코드
-			)
-
-		# 비활성화된 사용자 체크
-		if not user.is_active:
-			return response.Response(
-				{"success": False, "message": "This account is disabled."},
-				status=status.HTTP_403_FORBIDDEN  # 비활성화된 계정 상태 코드
-			)
-   
-		latest_password_history = PasswordHistory.objects.filter(user=user).first()	
-		if timezone.now() - latest_password_history.password_changed_at > self.password_expiry_duration:
-			password_expired =  True
-
-		# 로그인 처리
-		login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-
-		# JWT 토큰 생성
-		refresh = RefreshToken.for_user(user)
-		access_token = str(refresh.access_token)
-
-		staff_or_superuser = user.is_staff or user.is_superuser
-  
-		return response.Response(
-			{
-				"success": True,
-				"access": access_token,
-				"refresh": str(refresh),
-				"user":{
-					"username": user.username,
-	 				"email": user.email,
-					"joinedDate" : user.date_joined,
-					"staff": staff_or_superuser,
-					"password_expired": password_expired 
-				},
-				"message": "Login successful."
-			},
-			status=status.HTTP_200_OK
-		)
 	
 	""" 비밀번호 초기화 API """
 	def put(self, request, *args, **kwargs):

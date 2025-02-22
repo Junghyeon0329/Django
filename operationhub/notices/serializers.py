@@ -15,5 +15,7 @@ class NoticeSerializer(serializers.ModelSerializer):
 		read_only_fields = ['author']
 
 	def create(self, instance):
+		print("create 부분")
+		print(self.context['request'].user)
 		instance['author'] = self.context['request'].user
 		return super().create(instance)
