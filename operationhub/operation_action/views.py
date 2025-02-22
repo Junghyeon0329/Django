@@ -3,10 +3,17 @@ import workforce_API
     
 @decorators.api_view(['POST'])
 def homepage_login(request):
+    
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    if not email or not password:
+        return response.Response({
+            "success": False, "message": "Lack of login information."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     Authentication = workforce_API.JWTAuthentication()
-    response = Authentication.login(request)
-    print(response.json())
-    return response
+    return Authentication.login(request)
 
 import openai
 openai.api_key = 'your-openai-api-key' # OpenAI API 키 설정

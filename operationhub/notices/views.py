@@ -1,5 +1,6 @@
 
-from rest_framework import viewsets, permissions, response, status, exceptions
+from rest_framework import viewsets, permissions, response, status, exceptions, views
+from rest_framework_simplejwt import authentication
 from django.db import transaction
 from notices import models, serializers
 import workforce_API
@@ -25,34 +26,19 @@ class NoticeViewSet(viewsets.ModelViewSet):
 		if self.request.method in ['POST', 'PATCH', 'DELETE']:			
 			permission.append(permissions.IsAdminUser())			
 		return permission
-		# !권한 어떻게 처리할지 
+		
   
 	def get_authenticators(self):
-		print("\nget_authenticators\n")
 		if self.request.method in ['GET']: 
 			return []
 		else:	
-			authentication = workforce_API.JWTAuthentication()
-			result = authentication.verify_token(self.request)
-			print("(1)")
-			print(result)
+			auth = workforce_API.JWTAuthentication()
+			res = auth.verify_token(self.request)	
 			
-			if result: 
-				if result['success']: return []
-				else:
-					raise exceptions.AuthenticationFailed("오류: 401: '인증 실패'")
-					# return {"success": False,"message": f"오류: 401: '인증 실패'"}
-					# return response.Response(
-					# 	{"success": False, "message": "인증실패"},
-					# 	status=status.HTTP_400_BAD_REQUEST
-					# )
-			else:
-				raise exceptions.AuthenticationFailed("오류: 401: '인증 정보가 없습니다'")
-				# return {"success": False,"message": f"오류: 401: '인증 정보가 없습니다'"}
-				# return response.Response(
-				# 		{"success": False, "message": "인증 정보가 없습니다."},
-				# 		status=status.HTTP_400_BAD_REQUEST
-				# 	)
+			if res.status_code != 200:
+				print("\n 토큰이 만료되었습니다. \n")
+				return [authentication.JWTAuthentication()]
+			return []
 
 	@transaction.atomic
 	def create(self, request, *args, **kwargs):
