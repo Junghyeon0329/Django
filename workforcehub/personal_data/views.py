@@ -19,29 +19,28 @@ class UserAuthViewSet(viewsets.ModelViewSet):
 		password_expired =  False
 	
 		if not email or not password:
-			return response.Response(
-				{"success": False, "message": "email and password are required."},
+			return response.Response({
+				"success": False, "message": "Lack of information."},
 				status=status.HTTP_400_BAD_REQUEST
 			)
 
 		try: # 이메일로 사용자 검색
 			user = models.User.objects.get(email=email)
 		except models.User.DoesNotExist:
-			return response.Response(
-				{"success": False, "message": "The information received is invalid."},
+			return response.Response({
+				"success": False, "message": "Information error."},
 				status=status.HTTP_404_NOT_FOUND
 			)
 
-		if not user.check_password(password): # 사용자 인증 (비밀번호 체크)
-			return response.Response(
-				{"success": False, "message": "The information received is invalid."},
+		if not user.check_password(password):
+			return response.Response({
+				"success": False, "message": "Information error."},
 				status=status.HTTP_401_UNAUTHORIZED
 			)
 
-		# 비활성화된 사용자 체크
 		if not user.is_active:
-			return response.Response(
-				{"success": False, "message": "This account is disabled."},
+			return response.Response({
+				"success": False, "message": "Invalid account."},
 				status=status.HTTP_403_FORBIDDEN
 			)
    
@@ -58,22 +57,19 @@ class UserAuthViewSet(viewsets.ModelViewSet):
 
 		staff_or_superuser = user.is_staff or user.is_superuser
   
-		return response.Response(
-			{
-				"success": True,
+		return response.Response({
+			"success": True, 
+			"message":{
 				"access": access_token,
 				"refresh": str(refresh),
 				"user":{
 					"username": user.username,
-	 				"email": user.email,
+					"email": user.email,
 					"joinedDate" : user.date_joined,
 					"staff": staff_or_superuser,
 					"password_expired": password_expired 
 				},
-				"message": "Login successful."
-			},
-			status=status.HTTP_200_OK
-		)
+			}},status=status.HTTP_200_OK)
 
 	def verify_token(self, request, *args, **kwargs):
 
