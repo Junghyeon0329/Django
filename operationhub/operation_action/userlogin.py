@@ -4,7 +4,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import login, models, tokens
 from django.utils import timezone, http, encoding
 from django.template.loader import render_to_string
-from .models import PasswordHistory
 from datetime import timedelta
 
 class LoginAPIView(views.APIView):

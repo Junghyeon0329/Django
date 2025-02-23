@@ -31,6 +31,13 @@ urlpatterns = [
         "put": "change_password",  # 비밀번호 변경
     })),
     
+    path("user/", UserViewSet.as_view({
+        "get": "retrieve",  # 사용자 정보 조회
+        "put": "update",  # 사용자 정보 수정
+        "patch": "partial_update",  # 일부 정보 수정
+        "delete": "destroy"  # 회원 탈퇴
+    })),
+    
     path("notice/", NoticeViewSet.as_view({
         "get": "list", # 공지사항 조회
         "post": "create", # 공지사항 생성

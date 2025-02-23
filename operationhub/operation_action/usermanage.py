@@ -1,6 +1,6 @@
 from django.contrib.auth import models, hashers
 from rest_framework import response, status, views, permissions, throttling
-from .models import PasswordHistory
+
 from datetime import datetime
 import time
 
@@ -23,59 +23,9 @@ class UserAPIView(views.APIView):
 		return throttles  
 
 	""" 회원가입 API """
-	def post(self, request, *args, **kwargs):
+	# def post(self, request, *args, **kwargs):
 		
-		# 사용자에게 필요한 나머지 정보
-		email = request.data.get('email')
-		password = request.data.get('password')
-		is_superuser = request.data.get('is_superuser', False)
-		is_staff = request.data.get('is_staff', False)
 
-		# 필수 입력값 체크
-		if not email or not password:
-			return response.Response(
-				{"success": False, "message": "Missing required fields."},
-				status=status.HTTP_400_BAD_REQUEST
-			)
-   
-		# email is unique (중복 확인)
-		if models.User.objects.filter(email=email).exists():
-			return response.Response(
-				{"success": False, "message": "email already exists."},
-				status=status.HTTP_400_BAD_REQUEST
-			)
-   
-		# 현재 연도 + 타임스탬프 기반으로 유니크한 username 생성
-		current_year = datetime.now().year
-		timestamp = int(time.time())  # 현재 시간의 타임스탬프 (초 단위)
-		username = f"{current_year}-{timestamp}"
-
-		# username is unique (중복 확인)
-		if models.User.objects.filter(username=username).exists():
-			return response.Response(
-				{"success": False, "message": "Username already exists."},
-				status=status.HTTP_400_BAD_REQUEST
-			)
-   	  
-		try:
-			# 사용자 생성
-			user = models.User.objects.create_user(username=username, email=email, password=password)
-			user.is_superuser = is_superuser
-			user.is_staff = is_superuser or is_staff  # superuser일 경우 staff도 True로 설정
-			user.save()
-			
-			PasswordHistory.objects.create(user=user)
-			
-			return response.Response(
-					{"success": True, "message": "User created successfully."},
-					status=status.HTTP_201_CREATED
-				)
-
-		except Exception as e:
-			return response.Response(
-					{"success": True, "message": f"{str(e)}."},
-					status.HTTP_500_INTERNAL_SERVER_ERROR
-				)
 			
 	""" 회원 탈퇴 API (자신의 계정만 삭제 가능) """
 	def delete(self, request, *args, **kwargs):
@@ -145,9 +95,9 @@ class UserAPIView(views.APIView):
 					status=status.HTTP_400_BAD_REQUEST
 				)
 
-			password_history, created = PasswordHistory.objects.get_or_create(user=user)
-			password_history.password_changed_at = datetime.now()  # 현재 시각으로 업데이트
-			password_history.save()
+			# password_history, created = PasswordHistory.objects.get_or_create(user=user)
+			# password_history.password_changed_at = datetime.now()  # 현재 시각으로 업데이트
+			# password_history.save()
 
 			# 비밀번호가 맞다면 새로운 비밀번호로 변경
 			user.password = hashers.make_password(new_password)  # 새로운 비밀번호를 해싱하여 저장
