@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     
     'operation_action.apps.OperationActionConfig',       
+    "users.apps.UsersConfig",
     "notices.apps.NoticesConfig",
     
 ]

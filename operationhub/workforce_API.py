@@ -2,7 +2,7 @@
 from rest_framework import authentication, exceptions, response, status
 import requests
 
-class JWTAuthentication(authentication.BaseAuthentication):
+class JWTAuthentication2(authentication.BaseAuthentication):
     
     """ 공통 예외 처리 """
     def _handle_request_exception(self, exception):

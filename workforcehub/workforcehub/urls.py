@@ -3,7 +3,6 @@ from django.contrib import admin
 
 from personal_data.views import UserAuthViewSet
 
-# 관리자를 추가하는 방법 : python manage.py createsuperuser
 urlpatterns = [
     # path('admin/', admin.site.urls),
     path("auth/", UserAuthViewSet.as_view({

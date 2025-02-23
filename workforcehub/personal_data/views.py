@@ -1,6 +1,7 @@
 from rest_framework import viewsets, response, status
 from django.contrib.auth import models, login
 from rest_framework_simplejwt import authentication, tokens, exceptions
+from django.conf import settings
 import custom
 
 class UserAuthViewSet(viewsets.ModelViewSet):
@@ -48,8 +49,7 @@ class UserAuthViewSet(viewsets.ModelViewSet):
 		# if timezone.now() - latest_password_history.password_changed_at > self.password_expiry_duration:
 		# 	password_expired =  True
 
-		# 로그인 처리
-		login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+		login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
 
 		# JWT 토큰 생성
 		refresh = tokens.RefreshToken.for_user(user)
@@ -71,15 +71,17 @@ class UserAuthViewSet(viewsets.ModelViewSet):
 				},
 			}},status=status.HTTP_200_OK)
 
-	def verify_token(self, request, *args, **kwargs):
-
-		token_key = request.GET.get("token")
+	def verify_token(self, request, *args, **kwargs):		
+		token_key = request.headers.get("Authorization")		
 		if not token_key:
-			return response.Response(
-				{"success": False, "message": "Token required"},
+			return response.Response({
+				   "success": False, "message": "Token required"},
 				status=status.HTTP_400_BAD_REQUEST
 			)
 		
+		if token_key.startswith("Bearer "):
+			token_key = token_key.split("Bearer ")[1]
+  
 		authenticator = authentication.JWTAuthentication()
 		
 		try:
@@ -88,16 +90,15 @@ class UserAuthViewSet(viewsets.ModelViewSet):
 			request.user = user
    
 		except (exceptions.InvalidToken, exceptions.AuthenticationFailed):
-			return response.Response(
-				{"success": False, "message": "Invalid or expired token"},
+			return response.Response({
+				   "success": False, "message": "Invalid or expired token"},
 				status=status.HTTP_400_BAD_REQUEST
 			)
 
-		return response.Response(
-			{"success": True, "user": request.user.username}, 
-			status=status.HTTP_200_OK
-		)
-
+		return response.Response({
+			"success": True, 
+			"message":{"user": request.user.username},
+			},status=status.HTTP_200_OK)
 
 	def register(self, request, *args, **kwargs):
 		print("register")

@@ -1,5 +1,5 @@
 
-from rest_framework import viewsets, permissions, response, status, exceptions, views
+from rest_framework import viewsets, permissions, response, status
 from rest_framework_simplejwt import authentication
 from django.db import transaction
 from notices import models, serializers
@@ -15,20 +15,26 @@ class NoticeViewSet(viewsets.ModelViewSet):
 		return serializers.NoticeSerializer
 
 	def get_throttles(self):
+		print("(1)")
+		print(self.action)
+		print()
 		throttles = super().get_throttles()
 		if self.action in ['create', 'partial_update', 'destroy']:
 			throttles.append(custom.OneSecondThrottle())			
 		return throttles
 
 	def get_permissions(self):
-		print("\nget_permissions\n")
+		print("(1)")
+		print(self.action)
+		print()
 		permission = [] 
 		if self.request.method in ['POST', 'PATCH', 'DELETE']:			
 			permission.append(permissions.IsAdminUser())			
 		return permission
 		
-  
 	def get_authenticators(self):
+		
+
 		if self.request.method in ['GET']: 
 			return []
 		else:	
