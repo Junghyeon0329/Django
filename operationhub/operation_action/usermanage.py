@@ -72,47 +72,8 @@ class UserAPIView(views.APIView):
 				)
 	
 	""" 비밀번호 변경 API (자신의 계정만 변경 가능) """
-	def put(self, request, *args, **kwargs):
-		email = request.data.get('email')
-		current_password = request.data.get('current_password')  # 현재 비밀번호
-		new_password = request.data.get('new_password')  # 새로운 비밀번호
+	# def put(self, request, *args, **kwargs):
 
-		# 필수 필드 체크
-		if not email or not current_password or not new_password:
-			return response.Response(
-				{"success": False, "message": "Missing required fields."},
-				status=status.HTTP_400_BAD_REQUEST
-			)
-
-		try:
-			# 사용자 객체 가져오기
-			user = models.User.objects.get(email=email)
-
-			# 현재 비밀번호 확인 (비밀번호가 맞는지 검증)
-			if not user.check_password(current_password):
-				return response.Response(
-					{"success": False, "message": "Current password is incorrect."},
-					status=status.HTTP_400_BAD_REQUEST
-				)
-
-			# password_history, created = PasswordHistory.objects.get_or_create(user=user)
-			# password_history.password_changed_at = datetime.now()  # 현재 시각으로 업데이트
-			# password_history.save()
-
-			# 비밀번호가 맞다면 새로운 비밀번호로 변경
-			user.password = hashers.make_password(new_password)  # 새로운 비밀번호를 해싱하여 저장
-			user.save()
-
-			return response.Response(
-				{"success": True, "message": "Password updated successfully."},
-				status=status.HTTP_200_OK
-			)
-
-		except models.User.DoesNotExist:
-			return response.Response(
-				{"success": False, "message": "User not found."},
-				status=status.HTTP_404_NOT_FOUND
-			)
    
 	""" 모든 유저 정보 조회 API """		 
 	def get(self, request, *args, **kwargs):

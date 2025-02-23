@@ -20,7 +20,7 @@ def main():
 if __name__ == '__main__':
     # https://docs.djangoproject.com/ko/5.1/intro/tutorial01/
     # 관리자를 추가하는 방법 : python manage.py createsuperuser
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))       
-    from URLaddress import operationURL
-    sys.argv = ['manage.py', 'runserver', f"{operationURL['ip']}:{operationURL['port']}"]
+    # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))       
+    # from URLaddress import operationURL
+    # sys.argv = ['manage.py', 'runserver', f"{operationURL['ip']}:{operationURL['port']}"]
     main()

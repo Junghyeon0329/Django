@@ -1,7 +1,7 @@
-from rest_framework import viewsets, permissions, response, status, exceptions
+from rest_framework import viewsets, permissions, response, status
 from rest_framework_simplejwt import authentication, tokens
 from django.db import transaction
-from django.contrib.auth import models, login
+from django.contrib.auth import models, login, hashers
 from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta, datetime
@@ -59,7 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 		## 비밀번호 만료
 		latest_pw = PasswordHistory.objects.filter(user=user).first()
-		if timezone.now() - latest_pw.pw_changed_at > self.password_expiry_duration:
+		if timezone.now()- latest_pw.pw_changed_at > self.password_expiry_duration:
 			password_expired =  True
 
 		login(request, user, backend=settings.AUTHENTICATION_BACKENDS[0])
@@ -86,7 +86,7 @@ class UserViewSet(viewsets.ModelViewSet):
 	""" 계정 회원가입 """
 	@transaction.atomic
 	def register(self, request, *args, **kwargs):
-     
+	 
 		email = request.data.get('email')
 		password = request.data.get('password')
 
@@ -101,6 +101,8 @@ class UserViewSet(viewsets.ModelViewSet):
 				"success": False, "message": "Duplicated email"},
 				status=status.HTTP_400_BAD_REQUEST
 			)
+   
+		## TODO 사원정보를 확인하는 방식으로 인사팀에 등록되야 하는 유저인지 아닌지 구분
 		username = f"{datetime.now().year}-{int(time.time())}" # unique username(사원번호)
    	  
 		try:
@@ -109,6 +111,8 @@ class UserViewSet(viewsets.ModelViewSet):
 			
 			PasswordHistory.objects.create(user=user)
 			
+			## TODO 인사관리팀에 회원가입한 유저 알려주기
+   
 			return response.Response({
 					"success": True, "message": "User created successfully."},
 					status=status.HTTP_201_CREATED
@@ -119,7 +123,8 @@ class UserViewSet(viewsets.ModelViewSet):
 					"success": False, "message": f"{str(e)}."},
 					status.HTTP_500_INTERNAL_SERVER_ERROR
 				)
-  
+	
+	""" 비밀번호 초기화 """
 	@transaction.atomic  
 	def reset_password(self, request, *args, **kwargs):
 	
@@ -128,18 +133,52 @@ class UserViewSet(viewsets.ModelViewSet):
 				status=status.HTTP_200_OK
 			)
   
+  
+	""" 비밀번호 변경 """
 	@transaction.atomic
 	def change_password(self, request, *args, **kwargs):
 		jwt_authenticator = authentication.JWTAuthentication()
 		user_auth = jwt_authenticator.authenticate(self.request) # 토큰이 만료된 경우
-  	
+
 		if not user_auth: # 토큰이 없는 경우
 			return response.Response({
 				"success": False, "message": "Unauthorized"},
 				status=status.HTTP_400_BAD_REQUEST
 			)
- 
-		return response.Response({
-				"success": True, "message": "test."},
+
+		current_password = request.data.get('current_password')
+		new_password = request.data.get('new_password')
+
+		if not current_password or not new_password:
+			return response.Response({
+				"success": False, "message": "Lack of information."},
+				status=status.HTTP_400_BAD_REQUEST
+			)
+		try:
+			user = models.User.objects.get(username=user_auth[0].username)
+			if not user.check_password(current_password):
+				return response.Response({
+					"success": False, "message": "Unauthorized(Password)"},
+					status=status.HTTP_400_BAD_REQUEST
+				)
+			
+			PasswordHistory.objects.update_or_create(
+				user=user, 
+				defaults={'pw_changed_at': timezone.now()}
+			)
+			
+
+			user.password = hashers.make_password(new_password)  # 새로운 비밀번호를 해싱하여 저장
+			user.save()
+
+			return response.Response({
+				"success": True, "message": "Password updated successfully."},
 				status=status.HTTP_200_OK
 			)
+
+		except Exception as e:
+			return response.Response({
+					"success": False, "message": f"{str(e)}."},
+					status.HTTP_500_INTERNAL_SERVER_ERROR
+				)
+ 
