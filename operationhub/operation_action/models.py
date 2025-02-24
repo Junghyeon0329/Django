@@ -1,9 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-    
-class UserProfile(models.Model):
-    username = models.CharField(max_length=100)
-    profile_picture = models.FileField(upload_to='profile_pictures/')
         
 class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, null=True, default=None)

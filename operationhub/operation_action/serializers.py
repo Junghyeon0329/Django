@@ -1,11 +1,5 @@
 from rest_framework import serializers
-from .models import UserProfile, Message
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserProfile
-        fields = ['username', 'profile_picture']
-        
+from .models import Message
         
 class MessageSerializer(serializers.ModelSerializer):
     sender_email = serializers.SerializerMethodField()

@@ -1,10 +1,7 @@
 from django.urls import path
 from django.contrib import admin
 
-from operation_action import views, userprofile
-from operation_action import userfile, userchat
-
-
+from operation_action import userfile, userchat, views
 from notices.views import NoticeViewSet
 from users.views import UserViewSet
 
@@ -12,12 +9,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # path('file/', userfile.FileAPIView.as_view(), name='download-file'),
-    # path('upload/', userprofile.UserProfileUploadView.as_view(), name='upload-profile'),
     # path('workforce/', workforce_API.WorkforceAPIView.as_view(), name='worker-api'), 
     # path('chatgpt/', views.chatgpt_response, name='chatgpt_response'),
-    # path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),    
-    # path('user/', usermanage.UserAPIView.as_view(), name='user-api'),
-    # path('login/', views.homepage_login),
+    # path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),
     
     path("login/", UserViewSet.as_view({
         "post": "login",  # 로그인 (JWT 토큰 발급)
