@@ -1,17 +1,15 @@
 from django.urls import path
 from django.contrib import admin
 
-from operation_action import userfile, userchat, views
+from operation_action import userfile, userchat
 from notices.views import NoticeViewSet
 from users.views import UserViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # path('file/', userfile.FileAPIView.as_view(), name='download-file'),
-    # path('workforce/', workforce_API.WorkforceAPIView.as_view(), name='worker-api'), 
-    # path('chatgpt/', views.chatgpt_response, name='chatgpt_response'),
-    # path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),
+    path('file/', userfile.FileAPIView.as_view(), name='download-file'), # 양식 다운로드
+    path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'), # 채팅기록
     
     path("login/", UserViewSet.as_view({
         "post": "login",  # 로그인 (JWT 토큰 발급)
@@ -36,5 +34,6 @@ urlpatterns = [
         "delete": "destroy", # 공지사항 삭제
     })),
     
+    # path('chatgpt/', views.chatgpt_response, name='chatgpt_response'),
 ]
 

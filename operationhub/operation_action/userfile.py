@@ -5,10 +5,10 @@ import os
 class FileAPIView(views.APIView):
 	
 	def get_permissions(self):
-		permission_classes = []    
+		permission = []    
 		if self.request.method in ['GET']:
-			permission_classes.append(permissions.IsAuthenticated())
-		return permission_classes  
+			permission.append(permissions.IsAuthenticated())
+		return permission  
 
 	def get(self, request, *args, **kwargs):
 		try:
@@ -22,14 +22,14 @@ class FileAPIView(views.APIView):
 	
 			file_path = os.path.join(conf.settings.MEDIA_ROOT, 'files', f"{file_type}.docx")
 			if not os.path.exists(file_path):
-				return response.Response(
-					{"success": False, "message": "File not found"},
+				return response.Response({
+					"success": False, "message": "File not found"},
 					status=status.HTTP_400_BAD_REQUEST
 				)
 			return http.FileResponse(open(file_path, 'rb'), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 
 		except Exception as e:
-			return response.Response(
-					{"success": False, "message": str(e)},
-					status=status.HTTP_400_BAD_REQUEST
+			return response.Response({
+				"success": False, "message": str(e)},
+				status=status.HTTP_400_BAD_REQUEST
 			)

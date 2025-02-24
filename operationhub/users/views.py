@@ -18,6 +18,10 @@ class UserViewSet(viewsets.ModelViewSet):
 		permission = [] 
 		if self.action in ['']:
 			permission.append(permissions.IsAdminUser())
+   
+		elif self.action in ['change_password','withdrawal','retrieve']:
+			permission.append(permissions.IsAuthenticated())
+			
 		return permission
 
 	def get_throttles(self): # 횟수, 빈도 제한
@@ -128,18 +132,18 @@ class UserViewSet(viewsets.ModelViewSet):
 	""" 계정 회원탈퇴 """
 	@transaction.atomic
 	def withdrawal(self, request, *args, **kwargs):
-	 
-		jwt_authenticator = authentication.JWTAuthentication()
-		user_auth = jwt_authenticator.authenticate(self.request) # 토큰이 만료된 경우
 
-		if not user_auth: # 토큰이 없는 경우
-			return response.Response({
-				"success": False, "message": "Unauthorized"},
-				status=status.HTTP_400_BAD_REQUEST
-			)
-   
-		user = models.User.objects.get(username=user_auth[0].username)
-	
+		# 토큰을 직접 검사하려고 할때 적용
+		# jwt_authenticator = authentication.JWTAuthentication()
+		# user_auth = jwt_authenticator.authenticate(request)
+  
+		# if not user_auth:
+		# 	return response.Response({
+		# 		"success": False, "message": "Unauthorized"},
+		# 		status=status.HTTP_400_BAD_REQUEST
+		# 	)
+
+		user = models.User.objects.get(username=request.user)
 		try:
 			# TODO 인사관리팀에 해당 사원의 회원탈퇴 확인
 			user.is_active = False
@@ -246,15 +250,7 @@ class UserViewSet(viewsets.ModelViewSet):
 	""" 비밀번호 변경 """
 	@transaction.atomic
 	def change_password(self, request, *args, **kwargs):
-		jwt_authenticator = authentication.JWTAuthentication()
-		user_auth = jwt_authenticator.authenticate(self.request) # 토큰이 만료된 경우
-
-		if not user_auth: # 토큰이 없는 경우
-			return response.Response({
-				"success": False, "message": "Unauthorized"},
-				status=status.HTTP_400_BAD_REQUEST
-			)
-
+		
 		current_password = request.data.get('current_password')
 		new_password = request.data.get('new_password')
 
@@ -264,7 +260,7 @@ class UserViewSet(viewsets.ModelViewSet):
 				status=status.HTTP_400_BAD_REQUEST
 			)
 		try:
-			user = models.User.objects.get(username=user_auth[0].username)
+			user = models.User.objects.get(username=request.user)
 			if not user.check_password(current_password):
 				return response.Response({
 					"success": False, "message": "Unauthorized(Password)"},
@@ -292,15 +288,7 @@ class UserViewSet(viewsets.ModelViewSet):
  
 	""" 사용자 정보 조회 """
 	def retrieve(self, request, *args, **kwargs):
-		jwt_authenticator = authentication.JWTAuthentication()
-		user_auth = jwt_authenticator.authenticate(self.request) # 토큰이 만료된 경우
-
-		if not user_auth: # 토큰이 없는 경우
-			return response.Response({
-				"success": False, "message": "Unauthorized"},
-				status=status.HTTP_400_BAD_REQUEST
-			)
-
+     
 		try:
 			users = models.User.objects.all()
 			

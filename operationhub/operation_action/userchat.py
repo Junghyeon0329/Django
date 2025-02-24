@@ -75,7 +75,6 @@ class ChatHistoryAPIView(views.APIView):
 
 
 active_connections = {}  # 현재 WebSocket에 연결된 사용자 관리
-
 import jwt
 from django.conf import settings
 class ChatConsumer(AsyncWebsocketConsumer):
