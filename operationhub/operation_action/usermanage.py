@@ -20,12 +20,7 @@ class UserAPIView(views.APIView):
 		throttles = super().get_throttles()
 		if self.request.method == 'POST':  # POST 요청에 대해서만 1초 제한을 적용
 			throttles.append(OneSecondThrottle())
-		return throttles  
-
-	""" 회원가입 API """
-	# def post(self, request, *args, **kwargs):
-		
-
+		return throttles 
 			
 	""" 회원 탈퇴 API (자신의 계정만 삭제 가능) """
 	def delete(self, request, *args, **kwargs):
@@ -70,10 +65,6 @@ class UserAPIView(views.APIView):
 					{"success": False, "message": f"Error: {str(e)}."},
 					status=status.HTTP_500_INTERNAL_SERVER_ERROR
 				)
-	
-	""" 비밀번호 변경 API (자신의 계정만 변경 가능) """
-	# def put(self, request, *args, **kwargs):
-
    
 	""" 모든 유저 정보 조회 API """		 
 	def get(self, request, *args, **kwargs):

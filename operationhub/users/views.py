@@ -1,9 +1,10 @@
 from rest_framework import viewsets, permissions, response, status
 from rest_framework_simplejwt import authentication, tokens
 from django.db import transaction
+from django.db.models import Q
 from django.contrib.auth import models, login, hashers
 from django.conf import settings
-from django.utils import timezone
+from django.utils import timezone, encoding, http
 from datetime import timedelta, datetime
 from .models import PasswordHistory
 import time
@@ -104,7 +105,7 @@ class UserViewSet(viewsets.ModelViewSet):
    
 		## TODO 사원정보를 확인하는 방식으로 인사팀에 등록되야 하는 유저인지 아닌지 구분
 		username = f"{datetime.now().year}-{int(time.time())}" # unique username(사원번호)
-   	  
+		 
 		try:
 			user = models.User.objects.create_user(username=username, email=email, password=password)
 			user.save()
@@ -127,13 +128,90 @@ class UserViewSet(viewsets.ModelViewSet):
 	""" 비밀번호 초기화 """
 	@transaction.atomic  
 	def reset_password(self, request, *args, **kwargs):
-	
+		email = request.data.get('email')
+		username = request.data.get('username')
+  
+		if not email or not username:
+			return response.Response({
+				"success": False, "message": "Lack of information."},
+				status=status.HTTP_400_BAD_REQUEST
+			)
+
+		try:
+			## 해당 조건에 맞는 객체가 하나인 경우만 정상적으로 작동
+			user = models.User.objects.get(Q(email=email) & Q(username=username))
+
+			PasswordHistory.objects.update_or_create(
+				user=user, 
+				defaults={'pw_changed_at': timezone.now()}
+			)
+
+			user.set_password('test')
+			user.save()
+
+			## TODO 비밀번호 초기화 url 생성(URL 이메일로 전송)
+			# from django.utils import http, encoding
+			# token = tokens.default_token_generator.make_token(user)
+			# uid = http.urlsafe_base64_encode(encoding.force_bytes(user.pk))
+			# from URLaddress import front
+			# domain = front['ip'] + ':' + front['port']
+			# reset_url = f"http://{domain}/reset-password/{uid}/{token}/"   
+
+		except Exception as e:
+			return response.Response({
+					"success": False, "message": f"{str(e)}."},
+					status=status.HTTP_400_BAD_REQUEST
+				)
+
 		return response.Response({
-				"success": True, "message": "test."},
+				"success": True, "message": "Password reset successfully."},
 				status=status.HTTP_200_OK
 			)
+
+	""" 비밀번호 초기화(url) """
+	@transaction.atomic  
+	def reset_password_url(self, request, *args, **kwargs):
+		uid = kwargs.get('uid')
+		token = kwargs.get('token')
+		new_password = request.data.get('password')
   
-  
+		if not uid or not token or not new_password:
+			return response.Response({
+				"success": False, "message": "Lack of information."},
+				status=status.HTTP_400_BAD_REQUEST
+			)
+   
+		try:
+			user_id = encoding.force_str(http.urlsafe_base64_decode(uid))
+			user = models.User.objects.get(pk=user_id)
+
+			
+			if tokens.default_token_generator.check_token(user, token):
+	   
+				PasswordHistory.objects.update_or_create(
+					user=user, 
+					defaults={'pw_changed_at': timezone.now()}
+				)
+	   
+				user.set_password(new_password)
+				user.save()
+
+				return response.Response({
+						"success": True, "message": "Password reset successfully."},
+						status=status.HTTP_200_OK
+					)
+			else:
+				return response.Response({
+					"success": False, "message": "Invalid token."},
+					status=status.HTTP_400_BAD_REQUEST
+				)
+	
+		except Exception as e:
+			return response.Response({
+					"success": False, "message": f"{str(e)}."},
+					status=status.HTTP_400_BAD_REQUEST
+				)
+   
 	""" 비밀번호 변경 """
 	@transaction.atomic
 	def change_password(self, request, *args, **kwargs):
@@ -167,8 +245,7 @@ class UserViewSet(viewsets.ModelViewSet):
 				defaults={'pw_changed_at': timezone.now()}
 			)
 			
-
-			user.password = hashers.make_password(new_password)  # 새로운 비밀번호를 해싱하여 저장
+			user.password = hashers.make_password(new_password)
 			user.save()
 
 			return response.Response({

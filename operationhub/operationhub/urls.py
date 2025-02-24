@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib import admin
 
-from operation_action import views, usermanage, userlogin, userprofile
+from operation_action import views, usermanage, userprofile
 from operation_action import userfile, userpasswordreset, userchat
 
 
@@ -17,7 +17,6 @@ urlpatterns = [
     # path('workforce/', workforce_API.WorkforceAPIView.as_view(), name='worker-api'), 
     # path('chatgpt/', views.chatgpt_response, name='chatgpt_response'),
     # path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),    
-    # path('login/', userlogin.LoginAPIView.as_view(), name='login-api'),
     # path('user/', usermanage.UserAPIView.as_view(), name='user-api'),
     # path('login/', views.homepage_login),
     
@@ -27,7 +26,8 @@ urlpatterns = [
     })),
     
     path("password/", UserViewSet.as_view({
-        "post": "reset_password",  # 비밀번호 초기화 (이메일 발송)
+        "post": "reset_password",  # 비밀번호 초기화
+        "patch" : "reset_password_url", # 비밀번호 초기화(url)
         "put": "change_password",  # 비밀번호 변경
     })),
     
