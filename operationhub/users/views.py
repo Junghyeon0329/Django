@@ -124,7 +124,38 @@ class UserViewSet(viewsets.ModelViewSet):
 					"success": False, "message": f"{str(e)}."},
 					status.HTTP_500_INTERNAL_SERVER_ERROR
 				)
+   
+	""" 계정 회원탈퇴 """
+	@transaction.atomic
+	def withdrawal(self, request, *args, **kwargs):
+	 
+		jwt_authenticator = authentication.JWTAuthentication()
+		user_auth = jwt_authenticator.authenticate(self.request) # 토큰이 만료된 경우
+
+		if not user_auth: # 토큰이 없는 경우
+			return response.Response({
+				"success": False, "message": "Unauthorized"},
+				status=status.HTTP_400_BAD_REQUEST
+			)
+   
+		user = models.User.objects.get(username=user_auth[0].username)
 	
+		try:
+			# TODO 인사관리팀에 해당 사원의 회원탈퇴 확인
+			user.is_active = False
+			user.save()
+
+			return response.Response({
+					"success": True, "message": "Deactivated successfully."},
+					status=status.HTTP_200_OK
+				)
+   
+		except Exception as e:
+			return response.Response({
+					"success": False, "message": f"{str(e)}."},
+					status=status.HTTP_400_BAD_REQUEST
+				)
+ 
 	""" 비밀번호 초기화 """
 	@transaction.atomic  
 	def reset_password(self, request, *args, **kwargs):
@@ -259,3 +290,33 @@ class UserViewSet(viewsets.ModelViewSet):
 					status.HTTP_500_INTERNAL_SERVER_ERROR
 				)
  
+	""" 사용자 정보 조회 """
+	def retrieve(self, request, *args, **kwargs):
+		jwt_authenticator = authentication.JWTAuthentication()
+		user_auth = jwt_authenticator.authenticate(self.request) # 토큰이 만료된 경우
+
+		if not user_auth: # 토큰이 없는 경우
+			return response.Response({
+				"success": False, "message": "Unauthorized"},
+				status=status.HTTP_400_BAD_REQUEST
+			)
+
+		try:
+			users = models.User.objects.all()
+			
+			user_data = []
+			for user in users:
+				user_data.append({'username': user.username,'email': user.email})
+
+			return response.Response({
+				"success": True, "message":{"data": user_data}},
+                status=status.HTTP_200_OK
+            )
+
+		except Exception as e:
+			return response.Response({
+					"success": False, "message": f"{str(e)}."},
+					status.HTTP_500_INTERNAL_SERVER_ERROR
+				)
+
+

@@ -1,8 +1,8 @@
 from django.urls import path
 from django.contrib import admin
 
-from operation_action import views, usermanage, userprofile
-from operation_action import userfile, userpasswordreset, userchat
+from operation_action import views, userprofile
+from operation_action import userfile, userchat
 
 
 from notices.views import NoticeViewSet
@@ -13,7 +13,6 @@ urlpatterns = [
     
     # path('file/', userfile.FileAPIView.as_view(), name='download-file'),
     # path('upload/', userprofile.UserProfileUploadView.as_view(), name='upload-profile'),
-    # path('password-reset/<uid>/<token>/', userpasswordreset.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     # path('workforce/', workforce_API.WorkforceAPIView.as_view(), name='worker-api'), 
     # path('chatgpt/', views.chatgpt_response, name='chatgpt_response'),
     # path('chat/', userchat.ChatHistoryAPIView.as_view(), name='chat-history'),    
@@ -23,6 +22,7 @@ urlpatterns = [
     path("login/", UserViewSet.as_view({
         "post": "login",  # 로그인 (JWT 토큰 발급)
         "put": "register",  # 회원가입
+        "delete": "withdrawal"  # 회원 탈퇴
     })),
     
     path("password/", UserViewSet.as_view({
@@ -32,10 +32,7 @@ urlpatterns = [
     })),
     
     path("user/", UserViewSet.as_view({
-        "get": "retrieve",  # 사용자 정보 조회
-        "put": "update",  # 사용자 정보 수정
-        "patch": "partial_update",  # 일부 정보 수정
-        "delete": "destroy"  # 회원 탈퇴
+        "get": "retrieve",  # 사용자 정보 조회        
     })),
     
     path("notice/", NoticeViewSet.as_view({
