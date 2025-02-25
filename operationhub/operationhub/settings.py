@@ -64,7 +64,7 @@ CHANNEL_LAYERS = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT 인증 추가
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',  # JWT 인증 추가
     ),
 }
 

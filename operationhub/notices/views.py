@@ -1,5 +1,6 @@
 
 from rest_framework import viewsets, permissions, response, status
+from rest_framework_simplejwt import authentication
 from django.db import transaction
 from django.db.models import Q
 from notices import models, serializers
@@ -20,12 +21,16 @@ class NoticeViewSet(viewsets.ModelViewSet):
 		return queryset 
  
 	# get_authentication(self)에서는 self.action불가
+  
 	def get_serializer_class(self):
 		return serializers.NoticeSerializer
 
 	def get_permissions(self):		
-		permission = [] 
-		if self.action in ['create', 'partial_update', 'destroy']:
+		permission = []
+		if self.action in ['list']:
+			permission = [permissions.AllowAny()]
+  
+		elif self.action in ['create', 'partial_update', 'destroy']:
 			permission.append(permissions.IsAdminUser())			
 		return permission
 
