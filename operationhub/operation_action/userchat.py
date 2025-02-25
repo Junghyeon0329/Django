@@ -11,6 +11,7 @@ class ChatHistoryAPIView(views.APIView):
     def post(self, request):
         my_email = request.data.get('myEmail')
         other_email = request.data.get('otherEmail')
+        
         if not my_email or not other_email:
             return response.Response(
                 {"detail": "Both 'myEmail' and 'otherEmail' are required."},

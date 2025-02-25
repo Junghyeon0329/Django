@@ -1,6 +1,7 @@
 
 from rest_framework import viewsets, permissions, response, status
 from django.db import transaction
+from django.db.models import Q
 from notices import models, serializers
 import custom
 
@@ -8,6 +9,15 @@ class NoticeViewSet(viewsets.ModelViewSet):
 	queryset = models.Notice.objects.all().order_by("-id")
 	serializer_class = serializers.NoticeSerializer
 	pagination_class = custom.CustomPagination
+ 
+	def get_queryset(self): # 공지사항 내용 검색
+		queryset = models.Notice.objects.all().order_by("-id")
+		search_query = self.request.query_params.get("query", None)
+		
+		if search_query:
+			queryset = queryset.filter(Q(title__icontains=search_query) | Q(content__icontains=search_query))
+
+		return queryset 
  
 	# get_authentication(self)에서는 self.action불가
 	def get_serializer_class(self):
