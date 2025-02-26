@@ -92,6 +92,7 @@ class NoticeViewSet(viewsets.ModelViewSet):
 
 	@transaction.atomic
 	def destroy(self, request, *args, **kwargs):
+		print(request.data)
 		board_id = request.data.get("board_id")
   
 		if not board_id:
